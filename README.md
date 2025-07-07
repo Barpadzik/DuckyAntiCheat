@@ -13,12 +13,13 @@ It detects unnatural player behavior in block placing, movement, and other inter
   - `AutoTotemA`: Detects suspicious totem planting (beta check)
   - `ElytraAimA`: Player was detected to be hitting too fast while flying an elytra
   - `ElytraCriticalsA`: Detects when a player deals too much critical damage while flying an elytra in too short a time
+  - `FastClimbA`: Detects to fast player climbing on ladder, vines etc.
   - `FastPlaceA`: Detects when a player places too many blocks at a time
   - `InvalidPlaceA`: Detects when a player has placed a block at the wrong angle
   - `NoSlowDownA-G`: Many features of the player walking too fast during certain activities
   - `NoWebA`: Detects player movement that is too fast while in a web
   - `ThruBlocksA`: Detects when a player hits another player through a wall
-  - `TimerA-C`: Detects when a player sends too many packets
+  - `TimerA-D`: Detects when a player sends too many packets
 - 📉 Violation Level (VL) system for tracking repeated offenses
 - 🔧 Fully configurable thresholds, punishments, and enabled checks
 - 🛡 Permission-based bypass support (e.g., for admins)
@@ -49,7 +50,7 @@ auto-totem-a:
   max-ping: -1
   max-alerts: 5
   command: "kick %player% Too fast totem swap (AutoTotemA)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === ELYTRA AIM A ===
 elytra-aim-a:
@@ -58,7 +59,7 @@ elytra-aim-a:
   max-firework-delay: 200
   max-alerts: 5
   command: "kick %player% Cheating with Elytra (ElytraAimA)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === ELYTRA CRITICALS A ===
 elytra-criticals-a:
@@ -68,7 +69,7 @@ elytra-criticals-a:
   timeframe: 2000 # in milliseconds
   max-alerts: 5
   command: "kick %player% Cheating with Elytra (ElytraCriticalsA)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === THRU BLOCKS A ===
 thru-blocks-a:
@@ -77,7 +78,7 @@ thru-blocks-a:
   max-distance: 1.0 # Max allowed distance from clear line of sight
   max-alerts: 4
   command: "kick %player% Hitting through blocks (ThruBlocksA)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === NO WEB A ===
 no-web-a:
@@ -88,7 +89,7 @@ no-web-a:
   jump-violation-threshold: 0.42
   max-alerts: 3
   command: "kick %player% Suspicious movement in cobwebs (NoWebA)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === NO SLOW ALL CHECKS ===
 no-slowdown-max-distance: 1.0
@@ -107,7 +108,7 @@ no-slowdown-a:
     - 0.5014
   max-alerts: 10
   command: "kick %player% Player was walking too fast while eating (NoSlowDownA)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === NO SLOW B ===
 no-slowdown-b:
@@ -123,7 +124,7 @@ no-slowdown-b:
     - 0.5014
   max-alerts: 10
   command: "kick %player% Player was walking too fast with a drawn bow (NoSlowDownB)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === NO SLOW C ===
 no-slowdown-c:
@@ -139,7 +140,7 @@ no-slowdown-c:
     - 0.5014
   max-alerts: 10
   command: "kick %player% Player walked too fast while drawing the crossbow (NoSlowDownC)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === NO SLOW D ===
 no-slowdown-d:
@@ -155,7 +156,7 @@ no-slowdown-d:
     - 0.5014
   max-alerts: 10
   command: "kick %player% Player was walking too fast while holding a shield (NoSlowDownD)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === NO SLOW E ===
 no-slowdown-e:
@@ -163,7 +164,7 @@ no-slowdown-e:
   max-speed: 0.170
   max-alerts: 5
   command: "kick %player% Player was walking too fast on honey block (NoSlowDownE)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === NO SLOW F ===
 no-slowdown-f:
@@ -171,7 +172,7 @@ no-slowdown-f:
   max-speed: 0.170
   max-alerts: 5
   command: "kick %player% Player was walking too fast on soul sand (NoSlowDownF)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === NO SLOW G ===
 no-slowdown-g:
@@ -179,7 +180,7 @@ no-slowdown-g:
   max-speed: 0.135
   max-alerts: 10
   command: "kick %player% Player was walking too fast while sneaking (NoSlowDownG)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === INVALID PLACE A ===
 invalid-place-a:
@@ -188,7 +189,7 @@ invalid-place-a:
   max-angle: 50 # Maximum angle allowed between a looking direction and placed block
   max-alerts: 3
   command: "kick %player% Invalid block placement (InvalidPlaceA)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === FAST PLACE A ===
 fast-place:
@@ -197,7 +198,7 @@ fast-place:
   max-per-tick: 4
   max-alerts: 3
   command: "kick %player% Too fast block placement (FastPlaceA)"
-  debug: false
+  debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === TIMER A === // Beta Check !
 timer-a:
@@ -224,6 +225,24 @@ timer-c:
   max-packets-per-second: 24
   max-alerts: 10
   command: "kick %player% You send too many packets (TimerC)"
+  debug: false # Danger! This may cause lags with bigger amount of players!
+
+# === TIMER D === // Beta Check !
+timer-d:
+  enabled: true
+  cancel-event: true
+  max-packets-per-second: 30
+  max-alerts: 10
+  command: "kick %player% You send too many packets (TimerD)"
+  debug: false # Danger! This may cause lags with bigger amount of players!
+
+# === FAST CLIMB A === // Beta Check !
+fast-climb-a:
+  enabled: true
+  cancel-event: true
+  max-climb-speed: 0.15
+  max-alerts: 5
+  command: "kick %player% You climbed too fast (FastClimbA)"
   debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === DUCKY ANTI CHEAT MESSAGES ===
