@@ -72,7 +72,7 @@ public class NoSlowDownE implements Listener {
         Block blockBelow = player.getLocation().subtract(0, 0.1, 0).getBlock();
         if (blockBelow.getType() != Material.HONEY_BLOCK) return;
 
-        // Check if player is actually on ground and not in creative/spectator
+        // Check if player is actually on the ground and not in creative/spectator
         if (!player.isOnGround() || player.getGameMode().name().contains("CREATIVE") || player.getGameMode().name().contains("SPECTATOR"))
             return;
 

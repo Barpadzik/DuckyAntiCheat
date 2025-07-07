@@ -36,7 +36,7 @@ public class NoSlowDownG implements Listener {
     // Track last time player stopped flying for similar reasons
     private final ConcurrentHashMap<UUID, Long> lastPlayerFlight = new ConcurrentHashMap<>();
 
-    // Keep previous gliding state to detect when player stops gliding
+    // Keep the previous gliding state to detect when player stops gliding
     private final ConcurrentHashMap<UUID, Boolean> wasGliding = new ConcurrentHashMap<>();
 
     // Keep previous flying state to detect when player stops flying
@@ -102,7 +102,7 @@ public class NoSlowDownG implements Listener {
             // Check if 500 ms has passed since you started crouching
             if (System.currentTimeMillis() - sneakStart.get(uuid) < 500L) return;
         } else {
-            // If player stops crouching, clear the recorded time
+            // If a player stops crouching, clear the recorded time
             sneakStart.remove(uuid);
         }
 
@@ -139,13 +139,13 @@ public class NoSlowDownG implements Listener {
         // Retrieve configured max allowed speed for this check
         double maxSpeed = config.getNoSlowDownGMaxSpeed();
 
-        // If player has Speed potion effect, increase max speed proportionally
+        // If a player has Speed potion effect, increase max speed proportionally
         if (player.hasPotionEffect(PotionEffectType.SPEED)) {
             int amplifier = Objects.requireNonNull(player.getPotionEffect(PotionEffectType.SPEED)).getAmplifier();
             maxSpeed *= 1.0 + 0.2 * (amplifier + 1);
         }
 
-        // Check for boots enchantments that increase movement speed on ground
+        // Check for boots enchantments that increase movement speed on the ground
         if (player.getInventory().getBoots() != null) {
             int depthStriderLevel = player.getInventory().getBoots().getEnchantmentLevel(org.bukkit.enchantments.Enchantment.DEPTH_STRIDER);
             if (depthStriderLevel > 0) {

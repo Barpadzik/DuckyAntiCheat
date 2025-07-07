@@ -47,7 +47,7 @@ public class TimerA implements Listener {
         // Feature is disabled in config
         if (!config.isTimerAEnabled()) return false;
 
-        // Check if player has bypass permission
+        // Check if the player has bypass permission
         if (PermissionBypass.hasBypass(player)) return false;
         if (player.hasPermission("duckyac.bypass.timer-a")) return false;
 

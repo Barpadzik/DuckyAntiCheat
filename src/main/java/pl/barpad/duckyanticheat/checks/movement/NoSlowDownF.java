@@ -90,7 +90,7 @@ public class NoSlowDownF implements Listener {
             return;
         }
 
-        // Ignore if not on ground or in creative/spectator mode
+        // Ignore if not on the ground or in creative/spectator mode
         if (!player.isOnGround()
                 || player.getGameMode().name().contains("CREATIVE")
                 || player.getGameMode().name().contains("SPECTATOR")) {

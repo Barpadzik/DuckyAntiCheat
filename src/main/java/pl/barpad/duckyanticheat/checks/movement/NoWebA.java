@@ -27,10 +27,10 @@ public class NoWebA implements Listener {
 
     /**
      * Constructor - initializes the class with necessary managers and registers event listener.
-     * @param plugin Main plugin instance to register events.
+     * @param plugin          Main plugin instance to register events.
      * @param violationAlerts Handler for violation reporting.
-     * @param discordHook Handler for Discord webhook integration.
-     * @param config Configuration manager for plugin settings.
+     * @param discordHook     Handler for Discord webhook integration.
+     * @param config          Configuration manager for plugin settings.
      */
     public NoWebA(Main plugin, ViolationAlerts violationAlerts, DiscordHook discordHook, ConfigManager config) {
         this.violationAlerts = violationAlerts;
@@ -67,7 +67,7 @@ public class NoWebA implements Listener {
         // Get the block at the player's current location
         Block block = player.getLocation().getBlock();
 
-        // If player is not in a cobweb block, reset their violation count
+        // If a player is not in a cobweb block, reset their violation count
         if (block.getType() != Material.COBWEB) {
             if (config.isNoWebADebugMode()) {
                 Bukkit.getLogger().info("[DuckyAntiCheat] (NoWebA Debug) " + player.getName() + " is not in cobweb - resetting violations");

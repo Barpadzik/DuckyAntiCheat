@@ -70,7 +70,7 @@ public class TimerC implements Listener {
                 Bukkit.getLogger().info("[DuckyAntiCheat] (TimerC Debug) " + player.getName() + " animation count: " + count);
             }
 
-            // If animation count exceeds allowed packets per second
+            // If the animation count exceeds allowed packets per second
             if (count >= config.getMaxPacketsPerSecondC()) {
                 // Report violation to internal system
                 violationAlerts.reportViolation(player.getName(), "TimerC");

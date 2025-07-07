@@ -92,7 +92,7 @@ public class NoSlowDownA implements Listener {
         Long start = eatingStartTime.get(uuid);
         if (start == null || System.currentTimeMillis() - start < 500) return;
 
-        // Skip if feature is disabled, player is offline, or has bypass permission
+        // Skip if the feature is disabled, player is offline, or has bypass permission
         if (!config.isNoSlowDownAEnabled() || !player.isOnline() || PermissionBypass.hasBypass(player)) return;
         if (player.hasPermission("duckyac.bypass.noslowdown-a") || player.hasPermission("duckyac.bypass.noslowdown.*")) return;
 

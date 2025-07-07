@@ -124,7 +124,7 @@ public class AutoTotemA implements Listener {
         ItemStack after = player.getInventory().getItem(EquipmentSlot.OFF_HAND);
 
         boolean hadTotem = before != null && before.getType() == Material.TOTEM_OF_UNDYING;
-        boolean hasTotem = after != null && after.getType() == Material.TOTEM_OF_UNDYING;
+        boolean hasTotem = after.getType() == Material.TOTEM_OF_UNDYING;
 
         // If player now has a totem but didn't before, a swap occurred
         if (hasTotem && !hadTotem) {

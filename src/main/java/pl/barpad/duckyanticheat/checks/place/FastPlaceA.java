@@ -93,7 +93,7 @@ public class FastPlaceA implements Listener {
                         + " placed " + placed + " blocks/tick (VL: " + vl + ")");
             }
 
-            // If violation level reaches the configured max, execute punishment command
+            // If the violation level reaches the configured max, execute punishment command
             if (vl >= config.getMaxFastPlaceAAlerts()) {
                 String cmd = config.getFastPlaceACommand();
                 alerts.executePunishment(player.getName(), "FastPlaceA", cmd);
