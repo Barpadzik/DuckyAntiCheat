@@ -36,7 +36,7 @@ public class NoSlowDownF implements Listener {
     // Stores the timestamp when the player last stopped gliding with an elytra, used to ignore movement checks immediately after gliding
     private final ConcurrentHashMap<UUID, Long> lastElytraFlight = new ConcurrentHashMap<>();
 
-    // Stores the timestamp when the player last stopped flying (e.g. creative mode), used to ignore checks immediately after switching from flight
+    // Stores the timestamp when the player last stopped flying (e.g., creative mode), used to ignore checks immediately after switching from flight
     private final ConcurrentHashMap<UUID, Long> lastPlayerFlight = new ConcurrentHashMap<>();
 
     // Tracks whether the player was gliding with an elytra in the previous movement event, used to detect transitions from gliding to walking
@@ -124,7 +124,7 @@ public class NoSlowDownF implements Listener {
             maxSpeed *= 1.0 + (0.15 * depthStriderLevel);
         }
 
-        // Check if player exceeded speed threshold
+        // Check if player exceeded a speed threshold
         if (speed > maxSpeed) {
             long now = System.currentTimeMillis();
             long last = lastCheck.getOrDefault(uuid, 0L);

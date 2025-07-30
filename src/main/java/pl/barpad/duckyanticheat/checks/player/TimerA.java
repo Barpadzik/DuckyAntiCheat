@@ -57,7 +57,7 @@ public class TimerA implements Listener {
 
         // If 1 second has passed, reset packet counter and timestamp
         if (now - last >= 1000) {
-            packetCounts.put(uuid, 1); // Start new count from 1 for current packet
+            packetCounts.put(uuid, 1); // Start new count from 1 for the current packet
             lastReset.put(uuid, now);
         } else {
             // Otherwise, increment current packet count
@@ -79,7 +79,7 @@ public class TimerA implements Listener {
                     Bukkit.getLogger().info("[DuckyAntiCheat] (TimerA Debug) " + player.getName() + " VL: " + vl);
                 }
 
-                // If violation level exceeds allowed threshold, apply punishment
+                // If violation level exceeds an allowed threshold, apply punishment
                 if (vl >= config.getMaxTimerAAlerts()) {
                     String command = config.getTimerACommand();
                     violationAlerts.executePunishment(player.getName(), "TimerA", command);

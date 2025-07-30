@@ -143,7 +143,7 @@ public class AutoTotemA implements Listener {
         long last = lastTotemSwap.getOrDefault(uuid, 0L);
         long diff = now - last;
 
-        // Minimum allowed time between swaps (in ms), defaulting to 50ms minimum
+        // Minimum allowed time between swaps (in ms), defaulting to 50 ms minimum
         long minDelay = Math.max(50, config.getAutoTotemAMinDelay());
 
         if (diff < minDelay) {
@@ -156,7 +156,7 @@ public class AutoTotemA implements Listener {
 
     /**
      * Handles a detected violation by reporting it,
-     * logging debug info if enabled, and executing punishment if violation threshold reached.
+     * logging debug info if enabled, and executing punishment if a violation threshold reached.
      * @param player the player who violated the rule
      * @param actualDelay the actual time between swaps in milliseconds
      * @param minDelay the minimum allowed time in milliseconds

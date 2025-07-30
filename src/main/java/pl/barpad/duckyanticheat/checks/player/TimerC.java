@@ -42,7 +42,7 @@ public class TimerC implements Listener {
      * Called from onAnimate() on each PlayerAnimationEvent.
      *
      * @param player The player who triggered the animation
-     * @return true if the event should be cancelled due to violation threshold
+     * @return true if the event should be canceled due to a violation threshold
      */
     private boolean handlePacket(Player player) {
         // Check if TimerC is enabled in config
@@ -72,7 +72,7 @@ public class TimerC implements Listener {
 
             // If the animation count exceeds allowed packets per second
             if (count >= config.getMaxPacketsPerSecondC()) {
-                // Report violation to internal system
+                // Report violation to an internal system
                 violationAlerts.reportViolation(player.getName(), "TimerC");
 
                 // Get current violation level
@@ -82,7 +82,7 @@ public class TimerC implements Listener {
                     Bukkit.getLogger().info("[DuckyAntiCheat] (TimerC Debug) " + player.getName() + " VL: " + vl);
                 }
 
-                // If violation level exceeds punishment threshold
+                // If violation level exceeds a punishment threshold
                 if (vl >= config.getMaxTimerCAlerts()) {
                     String command = config.getTimerCCommand();
 

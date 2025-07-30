@@ -30,10 +30,10 @@ public class NoSlowDownA implements Listener {
     // Maps player's UUID to their last known location
     private final ConcurrentHashMap<UUID, Location> lastLocations = new ConcurrentHashMap<>();
 
-    // Maps UUIDs to timestamps indicating until when movement checks should be ignored (e.g. just started eating)
+    // Maps UUIDs to timestamps indicating until when movement checks should be ignored (e.g., just started eating)
     private final ConcurrentHashMap<UUID, Long> ignoreUntil = new ConcurrentHashMap<>();
 
-    // Maps UUIDs to timestamps indicating immunity from checks (e.g. after gliding or flying)
+    // Maps UUIDs to timestamps indicating immunity from checks (e.g., after gliding or flying)
     private final ConcurrentHashMap<UUID, Long> immunityUntil = new ConcurrentHashMap<>();
 
     // Tracks when the player last stopped gliding with elytra
@@ -88,7 +88,7 @@ public class NoSlowDownA implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        // Ignore if player started eating less than 0.5s ago
+        // Ignore if player started eating less than 0.5 s ago
         Long start = eatingStartTime.get(uuid);
         if (start == null || System.currentTimeMillis() - start < 500) return;
 

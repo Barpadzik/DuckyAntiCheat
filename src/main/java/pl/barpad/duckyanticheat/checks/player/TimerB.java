@@ -41,7 +41,7 @@ public class TimerB implements Listener {
      * If the number exceeds the configured limit, it reports a violation and executes a punishment if necessary.
      *
      * @param player the player to check
-     * @return true if the event should be cancelled, false otherwise
+     * @return true if the event should be canceled, false otherwise
      */
     private boolean handlePacket(Player player) {
         if (!config.isTimerBEnabled()) return false;

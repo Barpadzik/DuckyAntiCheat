@@ -37,7 +37,7 @@ public class TimerD implements Listener {
      * Called by each relevant event involving player interaction with entities.
      *
      * @param player Player to handle
-     * @return true if the event should be cancelled due to violation, false otherwise
+     * @return true if the event should be canceled due to violation, false otherwise
      */
     private boolean handlePacket(Player player) {
         if (!config.isTimerDEnabled()) return false;

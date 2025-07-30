@@ -76,7 +76,7 @@ public class ThruBlocksA implements Listener {
 
             boolean pathBlocked = false;
 
-            // Iterate through blocks on path and check if any are solid or cobweb
+            // Iterate through blocks on a path and check if any are solid or cobweb
             while (iterator.hasNext()) {
                 Block block = iterator.next();
                 if (block.getType().isSolid() || block.getType() == Material.COBWEB) {

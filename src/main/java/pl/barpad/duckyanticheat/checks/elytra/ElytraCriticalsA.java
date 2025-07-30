@@ -29,7 +29,7 @@ public class ElytraCriticalsA implements Listener {
 
     /**
      * Constructor initializes references and registers event listener.
-     * @param plugin instance of main plugin class
+     * @param plugin instance of the main plugin class
      * @param violationAlerts handles violation tracking and notifications
      * @param discordHook sends messages to Discord channel
      * @param config plugin configuration manager

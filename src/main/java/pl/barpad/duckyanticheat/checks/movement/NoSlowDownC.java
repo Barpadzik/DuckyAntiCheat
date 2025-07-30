@@ -112,7 +112,7 @@ public class NoSlowDownC implements Listener {
         // If the player has just started loading the crossbow, note the time
         handRaiseStart.putIfAbsent(uuid, System.currentTimeMillis());
 
-        // Please wait at least 500ms after starting to charge
+        // Please wait at least 500 ms after starting to charge
         if (System.currentTimeMillis() - handRaiseStart.get(uuid) < 500) {
             return;
         }

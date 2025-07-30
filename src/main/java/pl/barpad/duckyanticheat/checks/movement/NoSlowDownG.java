@@ -130,7 +130,7 @@ public class NoSlowDownG implements Listener {
         Location previous = lastLocations.getOrDefault(uuid, current);
         lastLocations.put(uuid, current.clone());
 
-        // Ignore movement with significant vertical change (e.g. stairs, slabs)
+        // Ignore movement with significant vertical change (e.g., stairs, slabs)
         if (Math.abs(current.getY() - previous.getY()) > 0.001) return;
 
         // Calculate horizontal speed between the two locations
@@ -165,7 +165,7 @@ public class NoSlowDownG implements Listener {
             long now = System.currentTimeMillis();
             long last = lastCheck.getOrDefault(uuid, 0L);
 
-            // Throttle violation reports to once every 300ms per player
+            // Throttle violation reports to once every 300 ms per player
             if (now - last < 300L) return;
 
             // Report violation and get current violation level
@@ -177,7 +177,7 @@ public class NoSlowDownG implements Listener {
                         + " moved too fast while sneaking (" + String.format("%.3f", speed) + " > " + String.format("%.3f", maxSpeed) + ")");
             }
 
-            // If violation level exceeds configured threshold, execute punishment command and send Discord alert
+            // If the violation level exceeds a configured threshold, execute punishment command and send Discord alert
             if (vl >= config.getMaxNoSlowDownGAlerts()) {
                 String cmd = config.getNoSlowDownGCommand();
                 alerts.executePunishment(player.getName(), "NoSlowDownG", cmd);

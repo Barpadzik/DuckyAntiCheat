@@ -53,7 +53,7 @@ public class NoSlowDownB implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    // Handle player interaction with edible items → grant 1s immunity from check
+    // Handle player interaction with edible items → grant 1 s immunity from check
     @EventHandler
     public void onItemUse(PlayerInteractEvent event) {
         ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
@@ -102,7 +102,7 @@ public class NoSlowDownB implements Listener {
         double dist = curr.toVector().distance(prev.toVector());
         lastLocations.put(uuid, curr.clone());
 
-        // Ignore if player moved vertically (e.g. jumping)
+        // Ignore if player moved vertically (e.g., jumping)
         if (Math.abs(curr.getY() - prev.getY()) > 0.001) return;
 
         // Skip if the movement distance matches any exempt values (e.g. due to lag)
