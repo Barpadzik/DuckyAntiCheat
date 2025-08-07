@@ -154,6 +154,16 @@ no-slowdown-g:
   command: "kick %player% Player was walking too fast while sneaking (NoSlowDownG)"
   debug: false # Danger! This may cause lags with bigger amount of players!
 
+# === NO SLOW H ===
+no-slowdown-h:
+  enabled: true
+  cancel-event: false
+  max-speed: 0.20
+  ignore-after-speed: 1.0
+  max-alerts: 10
+  command: "kick %player% Player was walking too fast while drinking (NoSlowDownH)"
+  debug: false # Danger! This may cause lags with bigger amount of players!
+
 # === INVALID PLACE A ===
 invalid-place-a:
   enabled: true

@@ -407,6 +407,10 @@ public class ConfigManager {
         return config.getDoubleList("no-slowdown-h.ignored-speeds");
     }
 
+    public double getNoSlowDownHMaxIgnoreSpeed() {
+        return plugin.getConfig().getDouble("no-slowdown-h.ignore-after-speed", 1.0);
+    }
+
     public int getMaxNoSlowDownHAlerts() {
         return plugin.getConfig().getInt("no-slowdown-h.max-alerts", 5);
     }

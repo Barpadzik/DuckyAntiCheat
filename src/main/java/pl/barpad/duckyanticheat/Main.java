@@ -79,6 +79,7 @@ public final class Main extends JavaPlugin {
         registerCheck(new NoSlowDownE(this, violationAlerts, discordHook, configManager));
         registerCheck(new NoSlowDownF(this, violationAlerts, discordHook, configManager));
         registerCheck(new NoSlowDownG(this, violationAlerts, discordHook, configManager));
+        registerCheck(new NoSlowDownH(this, violationAlerts, discordHook, configManager));
         registerCheck(new InvalidPlaceA(this, violationAlerts, discordHook, configManager));
         registerCheck(new FastPlaceA(this, violationAlerts, discordHook, configManager));
         registerCheck(new AutoTotemA(this, violationAlerts, discordHook, configManager));
