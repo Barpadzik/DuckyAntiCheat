@@ -74,10 +74,17 @@ elytra-criticals-a:
 # === THRU BLOCKS A ===
 thru-blocks-a:
   enabled: true
-  cancel-event: true
-  max-distance: 1.0 # Max allowed distance from clear line of sight
-  max-alerts: 4
+  cancel-event: false
+  max-alerts: 5
   command: "kick %player% Hitting through blocks (ThruBlocksA)"
+  debug: false # Danger! This may cause lags with bigger amount of players!
+
+# === THRU BLOCKS A ===
+thru-blocks-b:
+  enabled: true
+  cancel-event: false
+  max-alerts: 5
+  command: "kick %player% Hitting through blocks (ThruBlocksB)"
   debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === NO WEB A ===
@@ -200,7 +207,7 @@ fast-place:
   command: "kick %player% Too fast block placement (FastPlaceA)"
   debug: false # Danger! This may cause lags with bigger amount of players!
 
-# === TIMER A === // Beta Check !
+# === TIMER A ===
 timer-a:
   enabled: true
   cancel-event: true
@@ -209,7 +216,7 @@ timer-a:
   command: "kick %player% You send too many packets (TimerA)"
   debug: false # Danger! This may cause lags with bigger amount of players!
 
-# === TIMER B === // Beta Check !
+# === TIMER B ===
 timer-b:
   enabled: true
   cancel-event: true
@@ -218,7 +225,7 @@ timer-b:
   command: "kick %player% You send too many packets (TimerB)"
   debug: false # Danger! This may cause lags with bigger amount of players!
 
-# === TIMER C === // Beta Check !
+# === TIMER C ===
 timer-c:
   enabled: true
   cancel-event: true
@@ -227,7 +234,7 @@ timer-c:
   command: "kick %player% You send too many packets (TimerC)"
   debug: false # Danger! This may cause lags with bigger amount of players!
 
-# === TIMER D === // Beta Check !
+# === TIMER D ===
 timer-d:
   enabled: true
   cancel-event: true
@@ -236,13 +243,21 @@ timer-d:
   command: "kick %player% You send too many packets (TimerD)"
   debug: false # Danger! This may cause lags with bigger amount of players!
 
-# === FAST CLIMB A === // Beta Check !
+# === FAST CLIMB A ===
 fast-climb-a:
   enabled: true
   cancel-event: true
   max-climb-speed: 0.15
   max-alerts: 5
   command: "kick %player% You climbed too fast (FastClimbA)"
+  debug: false # Danger! This may cause lags with bigger amount of players!
+
+# === INVALID WEB MOVE ===
+invalid-web-mobe:
+  enabled: true
+  cancel-event: false
+  max-alerts: 5
+  command: "kick %player% Invalid Web Move (InvalidWebMove)"
   debug: false # Danger! This may cause lags with bigger amount of players!
 
 # === DUCKY ANTI CHEAT MESSAGES ===
@@ -286,7 +301,7 @@ plugin-reloaded: '&d&lDuckyAC &8» &aPlugin successfully reloaded.'
 
 ## 🚀 Installation
 
-1. Place `DuckyAC.jar` in your server’s `plugins/` folder.
+1. Place `DuckyAntiCheat-x.x.x.jar` in your server’s `plugins/` folder.
 2. Start your server.
 3. Configure the plugin in `plugins/DuckyAC/config.yml`.
 4. Reload plugin with `/duckyac reload`.
