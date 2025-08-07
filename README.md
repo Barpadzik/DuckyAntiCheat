@@ -18,7 +18,7 @@ It detects unnatural player behavior in block placing, movement, and other inter
   - `InvalidPlaceA`: Detects when a player has placed a block at the wrong angle
   - `NoSlowDownA-G`: Many features of the player walking too fast during certain activities
   - `NoWebA`: Detects player movement that is too fast while in a web
-  - `ThruBlocksA`: Detects when a player hits another player through a wall
+  - `ThruBlocksA-B`: Detects when a player hits another player through a wall
   - `TimerA-D`: Detects when a player sends too many packets
 - 📉 Violation Level (VL) system for tracking repeated offenses
 - 🔧 Fully configurable thresholds, punishments, and enabled checks
