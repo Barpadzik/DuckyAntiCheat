@@ -3,6 +3,7 @@ package pl.barpad.duckyanticheat;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import pl.barpad.duckyanticheat.checks.combat.ThruBlocksA;
+import pl.barpad.duckyanticheat.checks.combat.ThruBlocksB;
 import pl.barpad.duckyanticheat.checks.elytra.ElytraAimA;
 import pl.barpad.duckyanticheat.checks.movement.*;
 import pl.barpad.duckyanticheat.checks.place.FastPlaceA;
@@ -67,6 +68,7 @@ public final class Main extends JavaPlugin {
 
     private void registerChecks() {
         registerCheck(new ThruBlocksA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new ThruBlocksB(this, violationAlerts, discordHook, configManager));
         registerCheck(new ElytraAimA(this, violationAlerts, discordHook, configManager));
         registerCheck(new ElytraCriticalsA(this, violationAlerts, discordHook, configManager));
         registerCheck(new NoWebA(this, violationAlerts, discordHook, configManager));

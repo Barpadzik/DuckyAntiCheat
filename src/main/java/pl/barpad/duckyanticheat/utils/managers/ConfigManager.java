@@ -93,24 +93,46 @@ public class ConfigManager {
 
     // === THRU BLOCKS A ===
 
-    public boolean isThruBlocksEnabled() {
+    public boolean isThruBlocksAEnabled() {
         return plugin.getConfig().getBoolean("thru-blocks-a.enabled", true);
     }
 
-    public boolean isThruBlocksCancelEvent() {
-        return plugin.getConfig().getBoolean("thru-blocks-a.cancel-event", true);
+    public boolean isThruBlocksACancelEvent() {
+        return plugin.getConfig().getBoolean("thru-blocks-a.cancel-event", false);
     }
 
-    public int getMaxThruBlocksAlerts() {
+    public int getMaxThruBlocksAAlerts() {
         return plugin.getConfig().getInt("thru-blocks-a.max-alerts", 5);
     }
 
-    public String getThruBlocksCommand() {
+    public String getThruBlocksACommand() {
         return plugin.getConfig().getString("thru-blocks-a.command", "kick %player% Hitting through blocks (ThruBlocksA)");
     }
 
-    public boolean isThruBlocksDebugMode() {
-        return plugin.getConfig().getBoolean("thru-blocks-a.debug-mode", false);
+    public boolean isThruBlocksADebugMode() {
+        return plugin.getConfig().getBoolean("thru-blocks-a.debug", false);
+    }
+
+    // === THRU BLOCKS B ===
+
+    public boolean isThruBlocksBEnabled() {
+        return plugin.getConfig().getBoolean("thru-blocks-b.enabled", true);
+    }
+
+    public boolean isThruBlocksBCancelEvent() {
+        return plugin.getConfig().getBoolean("thru-blocks-b.cancel-event", false);
+    }
+
+    public int getMaxThruBlocksBAlerts() {
+        return plugin.getConfig().getInt("thru-blocks-b.max-alerts", 5);
+    }
+
+    public String getThruBlocksBCommand() {
+        return plugin.getConfig().getString("thru-blocks-b.command", "kick %player% Hitting through blocks (ThruBlocksB)");
+    }
+
+    public boolean isThruBlocksBDebugMode() {
+        return plugin.getConfig().getBoolean("thru-blocks-b.debug", false);
     }
 
     // === ELYTRA CRITICALS A ===
@@ -140,7 +162,7 @@ public class ConfigManager {
     }
 
     public boolean isElytraCriticalsADebugMode() {
-        return config.getBoolean("elytra-criticals-a.debug-mode", false);
+        return config.getBoolean("elytra-criticals-a.debug", false);
     }
 
     // === NO WEB A ===
@@ -162,7 +184,7 @@ public class ConfigManager {
     }
 
     public boolean isNoWebADebugMode() {
-        return config.getBoolean("no-web-a.debug-mode", false);
+        return config.getBoolean("no-web-a.debug", false);
     }
 
     // === NO SLOW A ===
@@ -365,6 +387,36 @@ public class ConfigManager {
 
     public boolean isNoSlowDownGDebugMode() {
         return plugin.getConfig().getBoolean("no-slowdown-g.debug", false);
+    }
+
+    // === NO SLOW H ===
+
+    public boolean isNoSlowDownHEnabled() {
+        return plugin.getConfig().getBoolean("no-slowdown-h.enabled", true);
+    }
+
+    public boolean shouldNoSlowDownHCancelEvent() {
+        return plugin.getConfig().getBoolean("no-slowdown-h.cancel-event", false);
+    }
+
+    public double getNoSlowDownHMaxSpeed() {
+        return plugin.getConfig().getDouble("no-slowdown-h.max-speed", 0.0);
+    }
+
+    public List<Double> getNoSlowDownHIgnoredSpeedValues() {
+        return config.getDoubleList("no-slowdown-h.ignored-speeds");
+    }
+
+    public int getMaxNoSlowDownHAlerts() {
+        return plugin.getConfig().getInt("no-slowdown-h.max-alerts", 5);
+    }
+
+    public String getNoSlowDownHCommand() {
+        return plugin.getConfig().getString("no-slowdown-h.command", "kick %player% Player was walking too fast while drinking (NoSlowDownH)");
+    }
+
+    public boolean isNoSlowDownHDebugMode() {
+        return plugin.getConfig().getBoolean("no-slowdown-h.debug", false);
     }
 
     // === INVALID PLACE A ===
