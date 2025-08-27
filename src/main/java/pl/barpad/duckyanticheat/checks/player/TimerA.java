@@ -66,7 +66,7 @@ public class TimerA implements Listener {
 
             // Debug output if enabled
             if (config.isTimerADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (TimerA Debug) " + player.getName() + " packet count: " + count);
+                Bukkit.getLogger().info("[DuckyAC] (TimerA Debug) " + player.getName() + " packet count: " + count);
             }
 
             // If packet count exceeds allowed limit, trigger violation
@@ -76,7 +76,7 @@ public class TimerA implements Listener {
 
                 // Debug output for violation level
                 if (config.isTimerADebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiCheat] (TimerA Debug) " + player.getName() + " VL: " + vl);
+                    Bukkit.getLogger().info("[DuckyAC] (TimerA Debug) " + player.getName() + " VL: " + vl);
                 }
 
                 // If violation level exceeds an allowed threshold, apply punishment
@@ -86,7 +86,7 @@ public class TimerA implements Listener {
                     discordHook.sendPunishmentCommand(player.getName(), command);
 
                     if (config.isTimerADebugMode()) {
-                        Bukkit.getLogger().info("[DuckyAntiCheat] (TimerA Debug) Executed punishment: " + command);
+                        Bukkit.getLogger().info("[DuckyAC] (TimerA Debug) Executed punishment: " + command);
                     }
                 }
 

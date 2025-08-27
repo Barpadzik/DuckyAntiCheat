@@ -86,7 +86,7 @@ public class ElytraAimA implements Listener {
         long delay = System.currentTimeMillis() - fireworkTime;
 
         if (config.isElytraAimADebugMode()) {
-            Bukkit.getLogger().info("[DuckyAntiCheat] (ElytraAimA Debug) " + playerName + " hit " + victim.getName() +
+            Bukkit.getLogger().info("[DuckyAC] (ElytraAimA Debug) " + playerName + " hit " + victim.getName() +
                     " | Delay: " + delay + "ms | Max: " + config.getElytraAimAMaxFireworkDelay() + "ms");
         }
 
@@ -99,7 +99,7 @@ public class ElytraAimA implements Listener {
             }
 
             if (config.isElytraAimADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (ElytraAimA Debug) Violation reported for " + playerName + " (ElytraAimA).");
+                Bukkit.getLogger().info("[DuckyAC] (ElytraAimA Debug) Violation reported for " + playerName + " (ElytraAimA).");
             }
 
             // Check if player reached max violations and apply punishment if so
@@ -111,7 +111,7 @@ public class ElytraAimA implements Listener {
                 discordHook.sendPunishmentCommand(playerName, punishmentCommand);
 
                 if (config.isElytraAimADebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiCheat] (ElytraAimA Debug) Punishment executed for " + playerName);
+                    Bukkit.getLogger().info("[DuckyAC] (ElytraAimA Debug) Punishment executed for " + playerName);
                 }
             }
         }

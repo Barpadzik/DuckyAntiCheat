@@ -43,6 +43,8 @@ public class FastClimbA implements Listener {
         if (PermissionBypass.hasBypass(player)) return;
         if (player.hasPermission("duckyac.bypass.fastclimb-a")) return;
 
+        if (player.getGameMode().name().equals("CREATIVE") || (player.getGameMode().name().equals("SPECTATOR") || (player.isFlying()))) return;
+
         Block block = player.getLocation().getBlock();
         Material type = block.getType();
 
@@ -65,7 +67,7 @@ public class FastClimbA implements Listener {
 
             // Optional debug logging
             if (config.isFastClimbADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (FastClimbA Debug) " + playerName + " is climbing too fast: " + deltaY);
+                Bukkit.getLogger().info("[DuckyAC] (FastClimbA Debug) " + playerName + " is climbing too fast: " + deltaY);
             }
 
             // Report the violation to the alert system
@@ -76,7 +78,7 @@ public class FastClimbA implements Listener {
             violationLevels.put(player.getUniqueId(), vl);
 
             if (config.isFastClimbADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (FastClimbA Debug) " + playerName + " VL: " + vl);
+                Bukkit.getLogger().info("[DuckyAC] (FastClimbA Debug) " + playerName + " VL: " + vl);
             }
 
             // If the player reached the threshold, punish
@@ -86,7 +88,7 @@ public class FastClimbA implements Listener {
                 discordHook.sendPunishmentCommand(playerName, command);
 
                 if (config.isFastClimbADebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiCheat] (FastClimbA Debug) Executed punishment: " + command);
+                    Bukkit.getLogger().info("[DuckyAC] (FastClimbA Debug) Executed punishment: " + command);
                 }
 
                 // Reset VL after punishment

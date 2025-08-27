@@ -173,7 +173,7 @@ public class NoSlowDownG implements Listener {
 
             // Debug log for server console if enabled in config
             if (config.isNoSlowDownGDebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (NoSlowDownG Debug) " + player.getName()
+                Bukkit.getLogger().info("[DuckyAC] (NoSlowDownG Debug) " + player.getName()
                         + " moved too fast while sneaking (" + String.format("%.3f", speed) + " > " + String.format("%.3f", maxSpeed) + ")");
             }
 

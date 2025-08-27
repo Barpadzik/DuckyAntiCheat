@@ -103,7 +103,7 @@ public class NoSlowDownE implements Listener {
 
             // Log debug information
             if (config.isNoSlowDownEDebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (NoSlowDownE Debug) " + player.getName()
+                Bukkit.getLogger().info("[DuckyAC] (NoSlowDownE Debug) " + player.getName()
                         + " moved too fast on HONEY_BLOCK (" + String.format("%.3f", speed) + " > " + String.format("%.3f", maxSpeed) + ")");
             }
 

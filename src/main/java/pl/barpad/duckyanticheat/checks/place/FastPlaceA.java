@@ -89,7 +89,7 @@ public class FastPlaceA implements Listener {
 
             // If debug mode is enabled, log info about the violation
             if (config.isFastPlaceADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (FastPlaceA Debug) " + player.getName()
+                Bukkit.getLogger().info("[DuckyAC] (FastPlaceA Debug) " + player.getName()
                         + " placed " + placed + " blocks/tick (VL: " + vl + ")");
             }
 

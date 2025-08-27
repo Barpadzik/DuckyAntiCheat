@@ -59,7 +59,7 @@ public class NoWebA implements Listener {
         // Ignore players who can fly or are inside vehicles
         if (player.getAllowFlight() || player.isInsideVehicle()) {
             if (config.isNoWebADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (NoWebA Debug) " + player.getName() + " can fly or is in vehicle - skipping");
+                Bukkit.getLogger().info("[DuckyAC] (NoWebA Debug) " + player.getName() + " can fly or is in vehicle - skipping");
             }
             return;
         }
@@ -70,7 +70,7 @@ public class NoWebA implements Listener {
         // If a player is not in a cobweb block, reset their violation count
         if (block.getType() != Material.COBWEB) {
             if (config.isNoWebADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (NoWebA Debug) " + player.getName() + " is not in cobweb - resetting violations");
+                Bukkit.getLogger().info("[DuckyAC] (NoWebA Debug) " + player.getName() + " is not in cobweb - resetting violations");
             }
             webViolations.put(player.getName(), 0);
             return;
@@ -84,7 +84,7 @@ public class NoWebA implements Listener {
         );
 
         if (config.isNoWebADebugMode()) {
-            Bukkit.getLogger().info("[DuckyAntiCheat] (NoWebA Debug) " + player.getName() + " deltaY=" + deltaY + ", deltaXZ=" + deltaXZ);
+            Bukkit.getLogger().info("[DuckyAC] (NoWebA Debug) " + player.getName() + " deltaY=" + deltaY + ", deltaXZ=" + deltaXZ);
         }
 
         // Check if player moved too far vertically or horizontally inside cobweb (exceeding thresholds)
@@ -95,13 +95,13 @@ public class NoWebA implements Listener {
             webViolations.put(name, current);
 
             if (config.isNoWebADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (NoWebA Debug) " + name + " violation count increased to " + current);
+                Bukkit.getLogger().info("[DuckyAC] (NoWebA Debug) " + name + " violation count increased to " + current);
             }
 
             // If the violation count exceeds a threshold (3), report and punish
             if (current >= 3) {
                 if (config.isNoWebADebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiCheat] (NoWebA Debug) " + name + " exceeded violation threshold - reporting violation");
+                    Bukkit.getLogger().info("[DuckyAC] (NoWebA Debug) " + name + " exceeded violation threshold - reporting violation");
                 }
 
                 // Report the violation to the alert system
@@ -112,7 +112,7 @@ public class NoWebA implements Listener {
                 if (config.isNoWebACancelEvent()) {
                     event.setCancelled(true);
                     if (config.isNoWebADebugMode()) {
-                        Bukkit.getLogger().info("[DuckyAntiCheat] (NoWebA Debug) " + name + " event cancelled due to violation");
+                        Bukkit.getLogger().info("[DuckyAC] (NoWebA Debug) " + name + " event cancelled due to violation");
                     }
                 }
 
@@ -121,7 +121,7 @@ public class NoWebA implements Listener {
                     String command = config.getNoWebACommand();
 
                     if (config.isNoWebADebugMode()) {
-                        Bukkit.getLogger().info("[DuckyAntiCheat] (NoWebA Debug) " + name + " exceeded alert threshold - executing punishment: " + command);
+                        Bukkit.getLogger().info("[DuckyAC] (NoWebA Debug) " + name + " exceeded alert threshold - executing punishment: " + command);
                     }
 
                     // Execute punishment command and notify Discord
@@ -135,7 +135,7 @@ public class NoWebA implements Listener {
         } else {
             // If movement is within allowed thresholds, reset violation count for this player
             if (config.isNoWebADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (NoWebA Debug) " + player.getName() + " moved within threshold - resetting violations");
+                Bukkit.getLogger().info("[DuckyAC] (NoWebA Debug) " + player.getName() + " moved within threshold - resetting violations");
             }
             webViolations.put(player.getName(), 0);
         }

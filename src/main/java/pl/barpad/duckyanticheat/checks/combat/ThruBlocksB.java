@@ -118,11 +118,11 @@ public class ThruBlocksB implements Listener {
                         + targetBlock.getLocation().getBlockY() + ", " + targetBlock.getLocation().getBlockZ()
                         : "None";
 
-                Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksB Debug) " + attacker.getName()
+                Bukkit.getLogger().info("[DuckyAC] (ThruBlocksB Debug) " + attacker.getName()
                         + " hit through a block (VL: " + vl + ")");
-                Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksB Debug) Location: X=" + loc.getX()
+                Bukkit.getLogger().info("[DuckyAC] (ThruBlocksB Debug) Location: X=" + loc.getX()
                         + " Y=" + loc.getY() + " Z=" + loc.getZ() + " | Yaw=" + yaw + " Pitch=" + pitch);
-                Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksB Debug) Looking at block: " + targetBlockInfo);
+                Bukkit.getLogger().info("[DuckyAC] (ThruBlocksB Debug) Looking at block: " + targetBlockInfo);
             }
 
             // If the violation level has reached or exceeded the configured maximum, execute punishment
@@ -141,7 +141,7 @@ public class ThruBlocksB implements Listener {
 
                 // Log punishment execution if debug mode is enabled
                 if (config.isThruBlocksBDebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksB Debug) Punishment executed for " + attacker.getName());
+                    Bukkit.getLogger().info("[DuckyAC] (ThruBlocksB Debug) Punishment executed for " + attacker.getName());
                 }
             }
         }

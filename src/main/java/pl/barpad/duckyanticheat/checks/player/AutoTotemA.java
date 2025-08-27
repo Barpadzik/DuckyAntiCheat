@@ -166,7 +166,7 @@ public class AutoTotemA implements Listener {
 
         if (config.isAutoTotemADebugMode()) {
             plugin.getLogger().info(String.format(
-                    "[DuckyAntiCheat] AutoTotemA: %s swapped totem in %dms (threshold: %dms, VL: %d)",
+                    "[DuckyAC] AutoTotemA: %s swapped totem in %dms (threshold: %dms, VL: %d)",
                     player.getName(), actualDelay, minDelay, vl
             ));
         }

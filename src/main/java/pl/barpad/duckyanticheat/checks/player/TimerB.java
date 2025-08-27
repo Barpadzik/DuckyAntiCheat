@@ -60,7 +60,7 @@ public class TimerB implements Listener {
             packetCounts.put(uuid, count);
 
             if (config.isTimerBDebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (TimerB Debug) " + player.getName() + " packet count: " + count);
+                Bukkit.getLogger().info("[DuckyAC] (TimerB Debug) " + player.getName() + " packet count: " + count);
             }
 
             if (count >= config.getMaxPacketsPerSecondB()) {
@@ -68,7 +68,7 @@ public class TimerB implements Listener {
                 int vl = violationAlerts.getViolationCount(player.getName(), "TimerB");
 
                 if (config.isTimerBDebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiCheat] (TimerB Debug) " + player.getName() + " VL: " + vl);
+                    Bukkit.getLogger().info("[DuckyAC] (TimerB Debug) " + player.getName() + " VL: " + vl);
                 }
 
                 if (vl >= config.getMaxTimerBAlerts()) {
@@ -76,7 +76,7 @@ public class TimerB implements Listener {
                     violationAlerts.executePunishment(player.getName(), "TimerB", command);
                     discordHook.sendPunishmentCommand(player.getName(), command);
                     if (config.isTimerBDebugMode()) {
-                        Bukkit.getLogger().info("[DuckyAntiCheat] (TimerB Debug) Executed punishment: " + command);
+                        Bukkit.getLogger().info("[DuckyAC] (TimerB Debug) Executed punishment: " + command);
                     }
                 }
 

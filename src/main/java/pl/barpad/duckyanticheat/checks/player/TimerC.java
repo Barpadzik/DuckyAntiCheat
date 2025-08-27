@@ -67,7 +67,7 @@ public class TimerC implements Listener {
 
             // Debug output for developers/admins
             if (config.isTimerCDebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (TimerC Debug) " + player.getName() + " animation count: " + count);
+                Bukkit.getLogger().info("[DuckyAC] (TimerC Debug) " + player.getName() + " animation count: " + count);
             }
 
             // If the animation count exceeds allowed packets per second
@@ -79,7 +79,7 @@ public class TimerC implements Listener {
                 int vl = violationAlerts.getViolationCount(player.getName(), "TimerC");
 
                 if (config.isTimerCDebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiCheat] (TimerC Debug) " + player.getName() + " VL: " + vl);
+                    Bukkit.getLogger().info("[DuckyAC] (TimerC Debug) " + player.getName() + " VL: " + vl);
                 }
 
                 // If violation level exceeds a punishment threshold
@@ -93,7 +93,7 @@ public class TimerC implements Listener {
                     discordHook.sendPunishmentCommand(player.getName(), command);
 
                     if (config.isTimerCDebugMode()) {
-                        Bukkit.getLogger().info("[DuckyAntiCheat] (TimerC Debug) Executed punishment: " + command);
+                        Bukkit.getLogger().info("[DuckyAC] (TimerC Debug) Executed punishment: " + command);
                     }
                 }
 

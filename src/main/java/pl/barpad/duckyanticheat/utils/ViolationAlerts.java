@@ -41,13 +41,13 @@ public class ViolationAlerts {
 
     public void executePunishment(String playerName, String check, String command) {
         if (isValidInput(playerName, check) || command == null || command.trim().isEmpty()) {
-            plugin.getLogger().warning("Invalid punishment parameters");
+            plugin.getLogger().warning("[DuckyAC] Invalid punishment parameters");
             return;
         }
 
         Player player = Bukkit.getPlayer(playerName);
         if (player == null) {
-            plugin.getLogger().warning("Cannot execute punishment: player " + playerName + " is not online");
+            plugin.getLogger().warning("[DuckyAC] Cannot execute punishment: player " + playerName + " is not online");
             return;
         }
 
@@ -56,9 +56,9 @@ public class ViolationAlerts {
                 String processedCommand = command.replace("%player%", playerName);
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
                 clearPlayerViolations(playerName);
-                plugin.getLogger().info("Executed punishment for " + playerName + ": " + processedCommand);
+                plugin.getLogger().info("[DuckyAC] Executed punishment for " + playerName + ": " + processedCommand);
             } catch (Exception e) {
-                plugin.getLogger().severe("Failed to execute punishment for " + playerName + ": " + e.getMessage());
+                plugin.getLogger().severe("[DuckyAC] Failed to execute punishment for " + playerName + ": " + e.getMessage());
             }
         });
     }
@@ -86,7 +86,7 @@ public class ViolationAlerts {
     public void clearAllViolations() {
         violations.clear();
         lastViolationTime.clear();
-        plugin.getLogger().info("Cleared all violation data");
+        plugin.getLogger().info("[DuckyAC] Cleared all violation data");
     }
 
     public void cleanupOldViolations() {
@@ -106,7 +106,7 @@ public class ViolationAlerts {
         }
 
         if (removedCount > 0) {
-            plugin.getLogger().info("Cleaned up " + removedCount + " old violations");
+            plugin.getLogger().info("[DuckyAC] Cleaned up " + removedCount + " old violations");
         }
     }
 
@@ -119,12 +119,12 @@ public class ViolationAlerts {
 
     private boolean isValidInput(String playerName, String checkType) {
         if (playerName == null || playerName.trim().isEmpty()) {
-            plugin.getLogger().warning("Attempted operation with null/empty player name");
+            plugin.getLogger().warning("[DuckyAC] Attempted operation with null/empty player name");
             return true;
         }
 
         if (checkType == null || checkType.trim().isEmpty()) {
-            plugin.getLogger().warning("Attempted operation with null/empty check type");
+            plugin.getLogger().warning("[DuckyAC] Attempted operation with null/empty check type");
             return true;
         }
 
@@ -138,7 +138,7 @@ public class ViolationAlerts {
         try {
             discordHook.sendViolationAlert(playerName, checkType, count);
         } catch (Exception e) {
-            plugin.getLogger().warning("Failed to send Discord alert: " + e.getMessage());
+            plugin.getLogger().warning("[DuckyAC] Failed to send Discord alert: " + e.getMessage());
         }
 
         sendPlayerAlerts(message);
@@ -152,7 +152,7 @@ public class ViolationAlerts {
                     .replace("%vl%", String.valueOf(count));
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to format alert message: " + e.getMessage());
-            return "[DuckyAntiCheat] " + playerName + " failed " + checkType + " (VL: " + count + ")";
+            return "[DuckyAC] " + playerName + " failed " + checkType + " (VL: " + count + ")";
         }
     }
 
@@ -164,7 +164,7 @@ public class ViolationAlerts {
                     player.sendMessage(coloredMessage);
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("Failed to send alert to " + player.getName() + ": " + e.getMessage());
+                plugin.getLogger().warning("[DuckyAC] Failed to send alert to " + player.getName() + ": " + e.getMessage());
             }
         }
     }

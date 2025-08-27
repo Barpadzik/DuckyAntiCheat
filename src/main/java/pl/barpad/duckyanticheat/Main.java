@@ -2,10 +2,10 @@ package pl.barpad.duckyanticheat;
 
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import pl.barpad.duckyanticheat.checks.combat.ThruBlocksA;
-import pl.barpad.duckyanticheat.checks.combat.ThruBlocksB;
+import pl.barpad.duckyanticheat.checks.combat.*;
 import pl.barpad.duckyanticheat.checks.elytra.ElytraAimA;
 import pl.barpad.duckyanticheat.checks.movement.*;
+import pl.barpad.duckyanticheat.checks.place.AirPlaceA;
 import pl.barpad.duckyanticheat.checks.place.FastPlaceA;
 import pl.barpad.duckyanticheat.checks.place.InvalidPlaceA;
 import pl.barpad.duckyanticheat.checks.elytra.ElytraCriticalsA;
@@ -29,7 +29,7 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        getLogger().info("DuckyAntiCheat Loading...");
+        getLogger().info("DuckyAC Loading...");
     }
 
     @Override
@@ -41,9 +41,9 @@ public final class Main extends JavaPlugin {
             initializeCommands();
             initializeExtras();
 
-            getLogger().info("DuckyAntiCheat Enabled - Welcome :] | Author: Barpad");
+            getLogger().info("DuckyAC Enabled - Welcome :] | Author: Barpad");
         } catch (Exception e) {
-            getLogger().severe("Failed to enable DuckyAntiCheat: " + e.getMessage());
+            getLogger().severe("Failed to enable DuckyAC: " + e.getMessage());
             e.printStackTrace();
             getServer().getPluginManager().disablePlugin(this);
         }
@@ -57,7 +57,7 @@ public final class Main extends JavaPlugin {
             violationAlerts.clearAllViolations();
         }
 
-        getLogger().info("DuckyAntiCheat Disabled - Thank You | Author: Barpad");
+        getLogger().info("DuckyAC Disabled - Thank You | Author: Barpad");
     }
 
     private void initializeComponents() {
@@ -67,11 +67,17 @@ public final class Main extends JavaPlugin {
     }
 
     private void registerChecks() {
-        registerCheck(new ThruBlocksA(this, violationAlerts, discordHook, configManager));
-        registerCheck(new ThruBlocksB(this, violationAlerts, discordHook, configManager));
+        registerCheck(new AirJumpA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new AirPlaceA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new AutoTotemA(this, violationAlerts, discordHook, configManager));
         registerCheck(new ElytraAimA(this, violationAlerts, discordHook, configManager));
         registerCheck(new ElytraCriticalsA(this, violationAlerts, discordHook, configManager));
-        registerCheck(new NoWebA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new GroundSpoofA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new FastClimbA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new FastPlaceA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new FlyA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new HitboxA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new InvalidPlaceA(this, violationAlerts, discordHook, configManager));
         registerCheck(new NoSlowDownA(this, violationAlerts, discordHook, configManager));
         registerCheck(new NoSlowDownB(this, violationAlerts, discordHook, configManager));
         registerCheck(new NoSlowDownC(this, violationAlerts, discordHook, configManager));
@@ -80,14 +86,15 @@ public final class Main extends JavaPlugin {
         registerCheck(new NoSlowDownF(this, violationAlerts, discordHook, configManager));
         registerCheck(new NoSlowDownG(this, violationAlerts, discordHook, configManager));
         registerCheck(new NoSlowDownH(this, violationAlerts, discordHook, configManager));
-        registerCheck(new InvalidPlaceA(this, violationAlerts, discordHook, configManager));
-        registerCheck(new FastPlaceA(this, violationAlerts, discordHook, configManager));
-        registerCheck(new AutoTotemA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new NoWebA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new ReachA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new ReachB(this, violationAlerts, discordHook, configManager));
         registerCheck(new TimerA(this, violationAlerts, discordHook, configManager));
         registerCheck(new TimerB(this, violationAlerts, discordHook, configManager));
         registerCheck(new TimerC(this, violationAlerts, discordHook, configManager));
         registerCheck(new TimerD(this, violationAlerts, discordHook, configManager));
-        registerCheck(new FastClimbA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new ThruBlocksA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new ThruBlocksB(this, violationAlerts, discordHook, configManager));
 
         getLogger().info("Registered " + registeredChecks.size() + " anti-cheat checks");
     }

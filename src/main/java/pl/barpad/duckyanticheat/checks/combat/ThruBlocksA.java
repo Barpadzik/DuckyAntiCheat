@@ -208,7 +208,6 @@ public class ThruBlocksA implements Listener {
         if (!attacker.getWorld().equals(victim.getWorld())) return;
 
         if (attacker.isGliding() || attacker.isFlying() ||
-                attacker.getGameMode().name().equals("CREATIVE") ||
                 attacker.getGameMode().name().equals("SPECTATOR")) return;
 
         double distance = attacker.getEyeLocation().distance(victim.getLocation());
@@ -276,15 +275,15 @@ public class ThruBlocksA implements Listener {
                         + targetBlock.getLocation().getBlockY() + ", " + targetBlock.getLocation().getBlockZ()
                         : "None";
 
-                Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksA Debug) " + attacker.getName()
+                Bukkit.getLogger().info("[DuckyAC] (ThruBlocksA Debug) " + attacker.getName()
                         + " hit through blocks (VL: " + vl + ")");
-                Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksA Debug) Distance: " + String.format("%.2f", distance)
+                Bukkit.getLogger().info("[DuckyAC] (ThruBlocksA Debug) Distance: " + String.format("%.2f", distance)
                         + " | Victim hitbox: " + String.format("%.1f", hitboxHeight) + "x" + String.format("%.1f", hitboxWidth));
-                Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksA Debug) Location: X=" + String.format("%.2f", victimLoc.getX())
+                Bukkit.getLogger().info("[DuckyAC] (ThruBlocksA Debug) Location: X=" + String.format("%.2f", victimLoc.getX())
                         + " Y=" + String.format("%.2f", victimLoc.getY()) + " Z=" + String.format("%.2f", victimLoc.getZ())
                         + " | Yaw=" + String.format("%.1f", yaw) + " Pitch=" + String.format("%.1f", pitch));
-                Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksA Debug) Ping: " + attackerPing + "ms | Looking at: " + targetBlockInfo);
-                Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksA Debug) Victim pose: " + victim.getPose().name()
+                Bukkit.getLogger().info("[DuckyAC] (ThruBlocksA Debug) Ping: " + attackerPing + "ms | Looking at: " + targetBlockInfo);
+                Bukkit.getLogger().info("[DuckyAC] (ThruBlocksA Debug) Victim pose: " + victim.getPose().name()
                         + " | On edge: " + victimOnBlockEdge + " | Can hit: " + canHit);
             }
 
@@ -301,7 +300,7 @@ public class ThruBlocksA implements Listener {
 
                 // Log punishment execution if debug mode is enabled
                 if (config.isThruBlocksADebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiCheat] (ThruBlocksA Debug) Punishment executed for " + attacker.getName());
+                    Bukkit.getLogger().info("[DuckyAC] (ThruBlocksA Debug) Punishment executed for " + attacker.getName());
                 }
             }
         }

@@ -1,76 +1,165 @@
 # === DUCKY ANTICHEAT CONFIGURATION ===
+# All checks are listed alphabetically. Each check has a short English description above it.
 
-# Time after which violations reset for the player
-# How it works:
-# Player is reported let's say 2 times for check ElytraAimA
-# After the default 300 seconds or 5 minutes his violations will reset to 0
-
+# Time after which a player's violations reset (in seconds).
+# Example: if a player gets 2 reports for a check, after this timeout their counter resets to 0.
 alert-timeout: 300
 
-# === AUTO TOTEM A ===
+# === VIOLATION ALERT MESSAGE TEMPLATE ===
+# Message format used when broadcasting alerts to staff / console.
+alert-message: "&d&lDuckyAC &8» &fPlayer &7»&f %player% &7»&6 %check% &7(&c%vl%VL&7)"
+
+# === CHECKS (alphabetically ordered) ===
+
+# AIR JUMP A
+# Detects jumping in the air
+air-jump-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
+  vertical-threshold: 0.42
+  ping-threshold: 300
+  damage-ignore-millis: 300
+  ground-grace-ms: 200
+  ignore-potion-boost: false # Keep it false; it's a disabling player checking when player has Jump Boost effect
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Unnatural air jump detected (AirJumpA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
+
+# AIR PLACE A
+# Detects block placements in midair (no supporting blocks nearby).
+air-place-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
+  max-alerts: 3 # Number of reports after which the command is executed
+  command: "kick %player% Invalid block placement (AirPlaceA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
+
+# AUTO TOTEM A
+# Detects extremely fast totem swaps (auto totem macros).
 auto-totem-a:
-  enabled: true
-  min-delay: 150 # minimum allowed swap interval in ms
+  enabled: true # Function to enable/disable check
+  min-delay: 150 # Minimum allowed swap interval in ms
   tick-interval: 3
   max-ping: -1
-  max-alerts: 5
-  command: "kick %player% Too fast totem swap (AutoTotemA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Too fast totem swap (AutoTotemA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === ELYTRA AIM A ===
+# ELYTRA AIM A
+# Detects abnormal aiming/targeting while using an Elytra (aim assistance).
 elytra-aim-a:
-  enabled: true
-  cancel-event: true
-  max-firework-delay: 200
-  max-alerts: 5
-  command: "kick %player% Cheating with Elytra (ElytraAimA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
+  max-firework-delay: 200 # Time in milliseconds when a player hits another player a second time within the set time will be reported
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Cheating with Elytra (ElytraAimA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === ELYTRA CRITICALS A ===
+# ELYTRA CRITICALS A
+# Detects repeated "critical" hits while using Elytra that may indicate cheats.
 elytra-criticals-a:
-  enabled: true
-  cancel-event: true
-  critical-hits-required: 3
-  timeframe: 2000 # in milliseconds
-  max-alerts: 5
-  command: "kick %player% Cheating with Elytra (ElytraCriticalsA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
+  critical-hits-required: 3 # The number of critical hits a player can land in a time frame to report the player.
+  timeframe: 700 # Timeframe in milliseconds to count critical hits
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Cheating with Elytra (ElytraCriticalsA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === THRU BLOCKS A ===
-thru-blocks-a:
-  enabled: true
-  cancel-event: false
-  max-alerts: 5
-  command: "kick %player% Hitting through blocks (ThruBlocksA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+# FAST CLIMB A
+# Detects unnatural fast ladder/climb movement.
+fast-climb-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
+  max-climb-speed: 0.15
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% You climbed too fast (FastClimbA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === THRU BLOCKS A ===
-thru-blocks-b:
-  enabled: true
-  cancel-event: false
-  max-alerts: 5
-  command: "kick %player% Hitting through blocks (ThruBlocksB)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+# FAST PLACE A
+# Detects placing blocks too quickly (anti-fast-place).
+fast-place-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
+  max-per-tick: 4
+  max-alerts: 3 # Number of reports after which the command is executed
+  command: "kick %player% Too fast block placement (FastPlaceA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === NO WEB A ===
+# FLY A
+fly-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
+  ignore-jump-boost: true
+  ping-threshold: 250
+  hover-delta: 0.01
+  hover-ticks: 15
+  ascend-delta: 0.42
+  ascend-ticks: 8
+  damage-ignore-millis: 1500
+  teleport-ignore-millis: 2000
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Flying (FlyA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
+
+# === GROUND SPOOF A ===
+# Heuristic check for clients that lie about being "on ground".
+# Conservative defaults chosen to minimise false positives.
+ground-spoof-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
+  ping-threshold: 300
+  check-depth: 3.0
+  min-ground-distance: 0.50
+  vertical-tolerance: 0.02
+  damage-ignore-millis: 300
+  teleport-ignore-millis: 500
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Suspected ground spoof (GroundSpoofA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
+
+# HITBOX A
+# Detects attackers that appear to hit targets outside reasonable hitbox angles/distances.
+hitbox-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
+  max-angle: 40.0
+  max-distance: 3.5
+  max-tolerance: 0.2
+  ping-threshold: 300
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Too large hitboxes (HitboxA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
+
+# INVALID PLACE A
+# Detects block placements with an invalid looking angle (player not plausibly looking at placement).
+invalid-place-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
+  max-angle: 50             # Maximum angle allowed between a look direction and placed block
+  max-alerts: 3 # Number of reports after which the command is executed
+  command: "kick %player% Invalid block placement (InvalidPlaceA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
+
+# NO WEB A
+# Detects suspicious movement while in cobwebs (NoWeb cheats).
 no-web-a:
-  enabled: true
-  cancel-event: true
-  min-web-vertical-slow: 0.25
-  min-web-horizontal-slow: 0.1
-  jump-violation-threshold: 0.42
-  max-alerts: 3
-  command: "kick %player% Suspicious movement in cobwebs (NoWebA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
+  max-alerts: 3 # Number of reports after which the command is executed
+  command: "kick %player% Suspicious movement in cobwebs (NoWebA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === NO SLOW ALL CHECKS ===
-no-slowdown-max-distance: 1.0
+# NO SLOWDOWN B / C / D
+# NoSlowDown checks for different situations (bow, crossbow, shield).
+no-slowdown-max-distance: 1.0 # ignore distance used by multiple NoSlowDown checks
 
-# === NO SLOW A ===
 no-slowdown-a:
-  enabled: true
-  cancel-event: false
+  # Detects walking too fast while eating.
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
   max-eating-speed: 0.20
+  max-distance: 1.0
   ignored-speeds:
     - 0.5072
     - 0.3024
@@ -78,14 +167,14 @@ no-slowdown-a:
     - 0.4822
     - 0.5013
     - 0.5014
-  max-alerts: 10
-  command: "kick %player% Player was walking too fast while eating (NoSlowDownA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% Player was walking too fast while eating (NoSlowDownA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === NO SLOW B ===
 no-slowdown-b:
-  enabled: true
-  cancel-event: false
+  # Detects walking too fast with a drawn bow.
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
   max-bow-speed: 0.20
   ignored-speeds:
     - 0.5072
@@ -94,14 +183,14 @@ no-slowdown-b:
     - 0.4822
     - 0.5013
     - 0.5014
-  max-alerts: 10
-  command: "kick %player% Player was walking too fast with a drawn bow (NoSlowDownB)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% Player was walking too fast with a drawn bow (NoSlowDownB)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === NO SLOW C ===
 no-slowdown-c:
-  enabled: true
-  cancel-event: false
+  # Detects walking too fast while drawing a crossbow.
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
   max-speed: 0.20
   ignored-speeds:
     - 0.5072
@@ -110,14 +199,14 @@ no-slowdown-c:
     - 0.4822
     - 0.5013
     - 0.5014
-  max-alerts: 10
-  command: "kick %player% Player walked too fast while drawing the crossbow (NoSlowDownC)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% Player walked too fast while drawing the crossbow (NoSlowDownC)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === NO SLOW D ===
 no-slowdown-d:
-  enabled: true
-  cancel-event: false
+  # Detects walking too fast while holding a shield.
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
   max-speed: 0.20
   ignored-speeds:
     - 0.5072
@@ -126,121 +215,125 @@ no-slowdown-d:
     - 0.4822
     - 0.5013
     - 0.5014
-  max-alerts: 10
-  command: "kick %player% Player was walking too fast while holding a shield (NoSlowDownD)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% Player was walking too fast while holding a shield (NoSlowDownD)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === NO SLOW E ===
 no-slowdown-e:
-  enabled: true
+  # Detects walking too fast on honey blocks.
+  enabled: true # Function to enable/disable check
   max-speed: 0.170
   max-alerts: 5
-  command: "kick %player% Player was walking too fast on honey block (NoSlowDownE)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  command: "kick %player% Player was walking too fast on honey block (NoSlowDownE)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === NO SLOW F ===
 no-slowdown-f:
-  enabled: true
+  # Detects walking too fast on soul sand.
+  enabled: true # Function to enable/disable check
   max-speed: 0.170
-  max-alerts: 5
-  command: "kick %player% Player was walking too fast on soul sand (NoSlowDownF)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Player was walking too fast on soul sand (NoSlowDownF)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === NO SLOW G ===
 no-slowdown-g:
-  enabled: true
+  # Detects walking too fast while sneaking.
+  enabled: true # Function to enable/disable check
   max-speed: 0.135
-  max-alerts: 10
-  command: "kick %player% Player was walking too fast while sneaking (NoSlowDownG)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% Player was walking too fast while sneaking (NoSlowDownG)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === NO SLOW H ===
 no-slowdown-h:
-  enabled: true
-  cancel-event: false
+  # Detects walking too fast while drinking; includes an "ignore-after-speed" threshold.
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
   max-speed: 0.20
-  ignore-after-speed: 1.0
-  max-alerts: 10
-  command: "kick %player% Player was walking too fast while drinking (NoSlowDownH)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  ignore-after-speed: 1.0 # The player is unable to go faster than a value of 1, so any value above that will be false, this feature prevents false reports
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% Player was walking too fast while drinking (NoSlowDownH)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === INVALID PLACE A ===
-invalid-place-a:
-  enabled: true
-  cancel-event: true
-  max-angle: 50 # Maximum angle allowed between a looking direction and placed block
-  max-alerts: 3
-  command: "kick %player% Invalid block placement (InvalidPlaceA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+# REACH A
+# Detects interacting with (placing or breaking) a block from an impossible distance.
+# Takes into account per-player block_interaction_range attribute where available, plus tolerance and ping adjustments.
+reach-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
+  base-range: 3.0 # Default base reach (used when player attribute is not available)
+  tolerance: 0.2 # Extra tolerance added to reach checks
+  ping-threshold: 300 # If player's ping exceeds this, the check will grant an extra 0.5 block tolerance for player
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Interacting with distant block (ReachA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === FAST PLACE A ===
-fast-place:
-  enabled: true
-  cancel-event: true
-  max-per-tick: 4
-  max-alerts: 3
-  command: "kick %player% Too fast block placement (FastPlaceA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+# REACH B
+# Detects attacking players/mobs from an impossible (too far) distance.
+# Uses configurable base range, tolerance, and ping threshold.
+reach-b:
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
+  base-range: 3.0 # Default base reach (used when player attribute is not available)
+  tolerance: 0.2 # Extra tolerance added to reach checks
+  ping-threshold: 300 # If player's ping exceeds this, the check will grant an extra 0.5 block tolerance for player
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Interacting with distant player (ReachB)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === TIMER A ===
+# THRU BLOCKS A
+# Detects hitting entities through blocks (A variant).
+thru-blocks-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Hitting through blocks (ThruBlocksA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
+
+# THRU BLOCKS B
+# Detects hitting entities through blocks (B variant).
+thru-blocks-b:
+  enabled: true # Function to enable/disable check
+  cancel-event: false # Enabling this feature will take you back to the position before reporting
+  max-alerts: 5 # Number of reports after which the command is executed
+  command: "kick %player% Hitting through blocks (ThruBlocksB)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
+
+# TIMER checks (A.D)
+# Detects abnormal packet timing / fast-clicking / timer manipulation.
 timer-a:
-  enabled: true
-  cancel-event: true
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
   max-packets-per-second: 24
-  max-alerts: 10
-  command: "kick %player% You send too many packets (TimerA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% You send too many packets (TimerA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === TIMER B ===
 timer-b:
-  enabled: true
-  cancel-event: true
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
   max-packets-per-second: 24
-  max-alerts: 10
-  command: "kick %player% You send too many packets (TimerB)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% You send too many packets (TimerB)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === TIMER C ===
 timer-c:
-  enabled: true
-  cancel-event: true
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
   max-packets-per-second: 24
-  max-alerts: 10
-  command: "kick %player% You send too many packets (TimerC)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% You send too many packets (TimerC)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === TIMER D ===
 timer-d:
-  enabled: true
-  cancel-event: true
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will take you back to the position before reporting
   max-packets-per-second: 30
-  max-alerts: 10
-  command: "kick %player% You send too many packets (TimerD)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+  max-alerts: 10 # Number of reports after which the command is executed
+  command: "kick %player% You send too many packets (TimerD)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
 
-# === FAST CLIMB A ===
-fast-climb-a:
-  enabled: true
-  cancel-event: true
-  max-climb-speed: 0.15
-  max-alerts: 5
-  command: "kick %player% You climbed too fast (FastClimbA)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
+# === DISCORD / MESSAGES / MISC ===
 
-# === INVALID WEB MOVE ===
-invalid-web-mobe:
-  enabled: true
-  cancel-event: false
-  max-alerts: 5
-  command: "kick %player% Invalid Web Move (InvalidWebMove)"
-  debug: false # Danger! This may cause lags with bigger amount of players!
-
-# === DUCKY ANTI CHEAT MESSAGES ===
-
-# === VIOLATION ALERTS ===
-alert-message: "&d&lDuckyAC &8» &fPlayer &7»&f %player% &7»&6 %check% &7(&c%vl%VL&7)"
-
-# === DISCORD TEMPLATES ===
+# Discord integration settings (optional).
 discord:
   enabled: false
   discord-webhook-url: "https://discord.com/api/webhooks/your-webhook-id"
@@ -249,7 +342,7 @@ discord:
   violation-message-template: "**AntiCheatSystem**\nPlayer: **%player%**\nCheck: **%check%**\nViolation: **%vl%**"
   punishment-message-template: "**Punishment Executed**\nPlayer: **%player%**\nCommand: `%command%`"
 
-# === MISC ===
+# Misc messages and labels used by plugin commands.
 no-permission: "&d&lDuckyAC &8» &cNo Permission!"
 incorrect-usage: '&d&lDuckyAC &8» &cUsage: /duckyac reload'
 update-available: "&d&lDuckyAC &8» &eA new version is available: &c%version%"

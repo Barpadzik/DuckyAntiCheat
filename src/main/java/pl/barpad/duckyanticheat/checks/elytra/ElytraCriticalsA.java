@@ -84,7 +84,7 @@ public class ElytraCriticalsA implements Listener {
 
                 // Debug info logging if enabled
                 if (config.isElytraCriticalsADebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiKomar] (ElytraCriticalsA Debug) " + playerName +
+                    Bukkit.getLogger().info("[DuckyAC] (ElytraCriticalsA Debug) " + playerName +
                             " landed a critical hit while gliding. (" + playerCriticalHits.get(playerName) + "/" +
                             config.getElytraCriticalsACriticalHitsRequired() + ")");
                 }
@@ -110,7 +110,7 @@ public class ElytraCriticalsA implements Listener {
 
                     // Debug info for violation trigger
                     if (config.isElytraCriticalsADebugMode()) {
-                        Bukkit.getLogger().info("[DuckyAntiCheat] (ElytraCriticalsA Debug) " + playerName +
+                        Bukkit.getLogger().info("[DuckyAC] (ElytraCriticalsA Debug) " + playerName +
                                 " triggered violation after 2 reports (VL: " + vl + ")");
                     }
 
@@ -121,7 +121,7 @@ public class ElytraCriticalsA implements Listener {
                         discordHook.sendPunishmentCommand(playerName, cmd);
 
                         if (config.isElytraCriticalsADebugMode()) {
-                            Bukkit.getLogger().info("[DuckyAntiCheat] (ElytraCriticalsA Debug) Penalty executed for " + playerName);
+                            Bukkit.getLogger().info("[DuckyAC] (ElytraCriticalsA Debug) Penalty executed for " + playerName);
                         }
                     }
 

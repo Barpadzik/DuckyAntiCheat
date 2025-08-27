@@ -58,7 +58,7 @@ public class TimerD implements Listener {
 
             // Debug information for developers/admins
             if (config.isTimerDDebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (TimerD Debug) " + player.getName() + " packet count: " + count);
+                Bukkit.getLogger().info("[DuckyAC] (TimerD Debug) " + player.getName() + " packet count: " + count);
             }
 
             // Check if packet count exceeds allowed maximum
@@ -67,7 +67,7 @@ public class TimerD implements Listener {
                 int vl = violationAlerts.getViolationCount(player.getName(), "TimerD");
 
                 if (config.isTimerDDebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAntiCheat] (TimerD Debug) " + player.getName() + " VL: " + vl);
+                    Bukkit.getLogger().info("[DuckyAC] (TimerD Debug) " + player.getName() + " VL: " + vl);
                 }
 
                 if (vl >= config.getMaxTimerDAlerts()) {
@@ -75,7 +75,7 @@ public class TimerD implements Listener {
                     violationAlerts.executePunishment(player.getName(), "TimerD", command);
                     discordHook.sendPunishmentCommand(player.getName(), command);
                     if (config.isTimerDDebugMode()) {
-                        Bukkit.getLogger().info("[DuckyAntiCheat] (TimerD Debug) Executed punishment: " + command);
+                        Bukkit.getLogger().info("[DuckyAC] (TimerD Debug) Executed punishment: " + command);
                     }
                 }
 

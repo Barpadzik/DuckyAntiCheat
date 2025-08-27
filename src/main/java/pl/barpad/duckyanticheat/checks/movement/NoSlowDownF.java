@@ -134,7 +134,7 @@ public class NoSlowDownF implements Listener {
 
             // Debug message
             if (config.isNoSlowDownFDebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (NoSlowDownF Debug) " + player.getName()
+                Bukkit.getLogger().info("[DuckyAC] (NoSlowDownF Debug) " + player.getName()
                         + " moved too fast on SOUL_SAND (" + String.format("%.3f", speed)
                         + " > " + String.format("%.3f", maxSpeed) + ")");
             }

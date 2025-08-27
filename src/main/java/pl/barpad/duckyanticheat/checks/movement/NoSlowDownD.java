@@ -149,7 +149,7 @@ public class NoSlowDownD implements Listener {
 
             // Debug output to console
             if (config.isNoSlowDownDDebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (NoSlowDownD Debug) " + player.getName()
+                Bukkit.getLogger().info("[DuckyAC] (NoSlowDownD Debug) " + player.getName()
                         + " moved too fast while blocking with shield: "
                         + String.format("%.4f", distance) + " (allowed: "
                         + String.format("%.4f", adjustedMaxSpeed) + ") (VL: " + vl + ")");

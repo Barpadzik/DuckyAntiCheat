@@ -145,7 +145,7 @@ public class NoSlowDownC implements Listener {
         int vl = alerts.getViolationCount(player.getName(), "NoSlowDownC");
 
         if (config.isNoSlowDownCDebugMode()) {
-            Bukkit.getLogger().info("[DuckyAntiCheat] (NoSlowDownC Debug) " + player.getName()
+            Bukkit.getLogger().info("[DuckyAC] (NoSlowDownC Debug) " + player.getName()
                     + " moved too fast while charging crossbow: " + String.format("%.4f", dist)
                     + " (allowed: " + String.format("%.4f", maxSpeed) + ") (VL: " + vl + ")");
         }

@@ -133,7 +133,7 @@ public class NoSlowDownB implements Listener {
 
         // Debug message for staff/admins
         if (config.isNoSlowDownBDebugMode()) {
-            Bukkit.getLogger().info("[DuckyAntiCheat] (NoSlowDownB Debug) " + player.getName()
+            Bukkit.getLogger().info("[DuckyAC] (NoSlowDownB Debug) " + player.getName()
                     + " moved too fast with bow drawn: " + String.format("%.4f", dist)
                     + " (allowed: " + String.format("%.4f", maxSpeed) + ") (VL: " + vl + ")");
         }

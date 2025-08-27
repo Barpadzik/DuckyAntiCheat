@@ -24,7 +24,7 @@ public class Reload extends AbstractCommand {
     }
 
     private String getMessage(String key) {
-        return configManager.getString(key, "§c[DuckyAntiCheat] Missing message: " + key).replace("&", "§");
+        return configManager.getString(key, "§c[DuckyAC] Missing message: " + key).replace("&", "§");
     }
 
     @Override

@@ -166,7 +166,7 @@ public class NoSlowDownA implements Listener {
             int vl = violationAlerts.getViolationCount(player.getName(), "NoSlowDownA");
 
             if (config.isNoSlowDownADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAntiCheat] (NoSlowDownA Debug) " + player.getName()
+                Bukkit.getLogger().info("[DuckyAC] (NoSlowDownA Debug) " + player.getName()
                         + " moved too fast while eating: " + String.format("%.4f", distance)
                         + " (allowed: " + String.format("%.4f", adjustedMaxSpeed) + ") (VL: " + vl + ")");
             }

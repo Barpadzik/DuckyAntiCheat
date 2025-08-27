@@ -146,7 +146,7 @@ public class NoSlowDownH implements Listener {
 
         // Debug message for staff/admins
         if (config.isNoSlowDownHDebugMode()) {
-            Bukkit.getLogger().info("[DuckyAntiCheat] (NoSlowDownH Debug) " + player.getName()
+            Bukkit.getLogger().info("[DuckyAC] (NoSlowDownH Debug) " + player.getName()
                     + " moved too fast while drinking potion: " + String.format("%.4f", dist)
                     + " (allowed: " + String.format("%.4f", maxSpeed) + ") (VL: " + vl + ")");
         }
