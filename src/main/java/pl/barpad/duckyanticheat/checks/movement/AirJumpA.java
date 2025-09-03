@@ -2,14 +2,21 @@ package pl.barpad.duckyanticheat.checks.movement;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 import pl.barpad.duckyanticheat.Main;
 import pl.barpad.duckyanticheat.utils.DiscordHook;
 import pl.barpad.duckyanticheat.utils.PermissionBypass;
@@ -20,45 +27,34 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * AirJump check.
- * <p>
- * Detects when a player appears to "jump" (gain upward motion typical for a jump)
- * while not having contact with the ground (i.e. starting the upward motion while already airborne).
- * <p>
- * This implementation is conservative to avoid false positives:
- * - ignores players with high ping (configurable),
- * - ignores players who recently took damage (knockback),
- * - ignores players who recently teleported,
- * - ignores players with certain potion effects if configured (e.g. JUMP_BOOST, LEVITATION),
- * - ignores creative / spectator / flying / gliding / in-vehicle states,
- * - ignores ascents that occur shortly after last ground contact (ground-grace window),
- * - ignores ascents that have negligible horizontal movement (typical "jump in place").
- * <p>
- * Configuration keys read via ConfigManager#getString(...) (safe defaults used):
- * - air-jump.vertical-threshold      (default "0.3")
- * - air-jump.min-horizontal          (default "0.02")
- */
 public class AirJumpA implements Listener {
 
     private final ViolationAlerts violationAlerts;
     private final DiscordHook discordHook;
     private final ConfigManager config;
 
-    // track whether the player was on the ground during the previous move tick
     private final ConcurrentHashMap<UUID, Boolean> lastOnGround = new ConcurrentHashMap<>();
 
-    // time (ms) of the last known ground contact for each player
     private final ConcurrentHashMap<UUID, Long> lastGroundTime = new ConcurrentHashMap<>();
 
-    // times for ignoring due to external events
     private final ConcurrentHashMap<UUID, Long> lastDamageTime = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> lastTeleportTime = new ConcurrentHashMap<>();
 
-    // small grace windows (ms)
+    private final ConcurrentHashMap<UUID, Long> lastPressurePlateTime = new ConcurrentHashMap<>();
+
+    private static final class VelocityMark {
+        final long time;
+        final Vector vec;
+        VelocityMark(long time, Vector vec) {
+            this.time = time;
+            this.vec = vec;
+        }
+    }
+    private final ConcurrentHashMap<UUID, VelocityMark> lastExternalVelocity = new ConcurrentHashMap<>();
+
     private static final long DEFAULT_DAMAGE_GRACE_MS = 300L;
     private static final long DEFAULT_TELEPORT_GRACE_MS = 500L;
-    private static final long DEFAULT_GROUND_GRACE_MS = 200L; // don't flag if player was on ground within this window
+    private static final long DEFAULT_GROUND_GRACE_MS = 200L;
 
     public AirJumpA(Main plugin, ViolationAlerts violationAlerts, DiscordHook discordHook, ConfigManager config) {
         this.violationAlerts = violationAlerts;
@@ -66,7 +62,6 @@ public class AirJumpA implements Listener {
         this.config = config;
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
-        // simple listener to record when a player takes damage (to ignore knockback-jumps)
         Bukkit.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
             @EventHandler
             public void onEntityDamage(EntityDamageEvent ev) {
@@ -75,83 +70,82 @@ public class AirJumpA implements Listener {
             }
         }, plugin);
 
-        // record teleports so we can ignore jumps immediately after teleport
         Bukkit.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
             @EventHandler
             public void onTeleport(PlayerTeleportEvent ev) {
                 Player p = ev.getPlayer();
                 lastTeleportTime.put(p.getUniqueId(), System.currentTimeMillis());
-                // clear lastOnGround to avoid weird state
                 lastOnGround.remove(p.getUniqueId());
-                // also update lastGroundTime to far past so that immediate teleport won't be considered ground contact
                 lastGroundTime.remove(p.getUniqueId());
             }
         }, plugin);
     }
 
-    /**
-     * Safe wrapper for Player.getPing() - returns 50 on failure.
-     */
-    private int getPlayerPing(Player player) {
-        try {
-            return player.getPing();
-        } catch (Exception ex) {
-            return 50;
-        }
-    }
-
-    /**
-     * Reads the vertical threshold for AirJump from the configuration.
-     * Uses ConfigManager#getString(path, def) with default 0.3 blocks/tick.
-     *
-     * @return configured vertical threshold (double)
-     */
-    private double getAirJumpAVerticalThreshold() {
-        String s = config.getString("air-jump.vertical-threshold", "0.3");
-        try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException ex) {
-            return 0.3;
-        }
-    }
-
-    /**
-     * Minimum horizontal movement (XZ) required to consider this ascent suspicious.
-     * If horizontal movement is below this threshold we treat it as a "jump in place" and ignore.
-     * <p>
-     * Default: 0.02 blocks per tick (conservative).
-     */
-    private double getAirJumpAMinHorizontalMovement() {
-        String s = config.getString("air-jump.min-horizontal", "0.02");
-        try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException ex) {
-            return 0.02;
-        }
-    }
-
-    /**
-     * Returns the configured ground grace (ms).
-     * For now we keep it local; you can expose it through ConfigManager later.
-     */
     private long getGroundGraceMillis() {
         return DEFAULT_GROUND_GRACE_MS;
     }
 
-    /**
-     * Main movement handler.
-     * <p>
-     * Logic:
-     * - If a player transitions in-air and exhibits an upward Y delta larger than a threshold
-     *   while they were not on the ground in previous tick -> suspect air-jump.
-     * <p>
-     * - Several heuristics and ignores are applied to reduce false positives (potion effects,
-     *   recent damage, teleport, ping threshold, gamemode, gliding/flying, vehicles).
-     * <p>
-     * Improvements:
-     * - do not flag if the player had ground contact recently (within ground-grace window)
-     * - do not flag if horizontalDelta < minHorizontalMovement (jumping in place)
-     */
+    private boolean isPressurePlate(Material m) {
+        if (m == null) return false;
+        String name = m.name();
+        return name.endsWith("_PRESSURE_PLATE")
+                || name.equals("STONE_PLATE")
+                || name.equals("WOOD_PLATE");
+    }
+
+    private boolean isSlimeBlock(Material m) {
+        return m != null && "SLIME_BLOCK".equals(m.name());
+    }
+
+    private boolean isBubbleColumn(Material m) {
+        return m != null && "BUBBLE_COLUMN".equals(m.name());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onVelocity(PlayerVelocityEvent ev) {
+        if (!config.isAirJumpAEnabled()) return;
+        if (!config.isIgnoreExternalVelocity()) return;
+
+        final Player p = ev.getPlayer();
+        final Vector v = ev.getVelocity();
+        if (v == null) return;
+
+        lastExternalVelocity.put(p.getUniqueId(), new VelocityMark(System.currentTimeMillis(), v));
+
+        if (config.isAirJumpADebugMode() && v.getY() > 0) {
+            Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) VelocityEvent for "
+                    + p.getName() + " vY=" + String.format("%.3f", v.getY()));
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPhysical(PlayerInteractEvent ev) {
+        if (!config.isAirJumpAEnabled()) return;
+        if (!config.isDetectPressurePlates()) return;
+        if (ev.getAction() != Action.PHYSICAL) return;
+        if (ev.getClickedBlock() == null) return;
+
+        Material m = ev.getClickedBlock().getType();
+        if (isPressurePlate(m)) {
+            lastPressurePlateTime.put(ev.getPlayer().getUniqueId(), System.currentTimeMillis());
+            if (config.isAirJumpADebugMode()) {
+                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Plate activated for "
+                        + ev.getPlayer().getName() + " on " + m.name());
+            }
+        }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent ev) {
+        UUID id = ev.getPlayer().getUniqueId();
+        lastOnGround.remove(id);
+        lastGroundTime.remove(id);
+        lastDamageTime.remove(id);
+        lastTeleportTime.remove(id);
+        lastExternalVelocity.remove(id);
+        lastPressurePlateTime.remove(id);
+    }
+
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
@@ -166,17 +160,20 @@ public class AirJumpA implements Listener {
         if (gm.equals("CREATIVE") || gm.equals("SPECTATOR")) return;
         if (player.isGliding() || player.isFlying() || player.isInsideVehicle()) return;
 
+        try {
+            if (player.isRiptiding()) return;
+        } catch (NoSuchMethodError ignored) {
+        }
+
         long now = System.currentTimeMillis();
 
         boolean prevGround = lastOnGround.getOrDefault(uuid, player.isOnGround());
         boolean currGround = player.isOnGround();
 
-        // update lastGroundTime when we see the player on ground
         if (currGround) {
             lastGroundTime.put(uuid, now);
         }
 
-        // compute vertical delta between from->to; PlayerMoveEvent sometimes fires with null to/from
         Location from = event.getFrom();
         Location to = event.getTo();
         if (to == null || from == null) {
@@ -189,60 +186,51 @@ public class AirJumpA implements Listener {
         double dz = to.getZ() - from.getZ();
         double horizontalDelta = Math.hypot(dx, dz);
 
-        // how recently was the player on ground?
         long lastGround = lastGroundTime.getOrDefault(uuid, 0L);
         long sinceGround = (lastGround == 0L) ? Long.MAX_VALUE : (now - lastGround);
 
-        // basic airborne ascent condition
-        boolean basicCondition = !prevGround && !currGround && deltaY > getAirJumpAVerticalThreshold();
+        boolean basicCondition = !prevGround && !currGround && deltaY > config.getAirJumpAVerticalThreshold();
 
-        // additional guard: if player was on ground within the ground-grace window, consider it a normal jump and ignore
         boolean recentGroundContact = sinceGround <= getGroundGraceMillis();
-
-        // horizontal guard: ignore if player is essentially not moving horizontally (jump in place)
-        double minHorizontal = getAirJumpAMinHorizontalMovement();
+        double minHorizontal = config.getAirJumpAMinHorizontalMovement();
         boolean sufficientHorizontalMovement = horizontalDelta >= minHorizontal;
 
-        // ignore if player has jump-boost potion and config allows ignoring
         if (config.isAirJumpAIgnorePotionBoost()) {
             PotionEffect jump = player.getPotionEffect(PotionEffectType.JUMP);
             if (jump != null) {
                 if (config.isAirJumpADebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName() + " - has JUMP_BOOST potion.");
+                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName() + " - JUMP_BOOST.");
                 }
                 lastOnGround.put(uuid, currGround);
                 return;
             }
         }
-
-        // ignore levitation (player may move up)
         PotionEffect lev = player.getPotionEffect(PotionEffectType.LEVITATION);
         if (lev != null) {
             if (config.isAirJumpADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName() + " - LEVITATION effect present.");
+                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName() + " - LEVITATION.");
             }
             lastOnGround.put(uuid, currGround);
             return;
         }
 
-        // ping check
-        int ping = getPlayerPing(player);
-        int pingThreshold = config.getAirJumpAPingThreshold();
-        if (ping > pingThreshold) {
+        Material feet = player.getLocation().getBlock().getType();
+        Material below = player.getLocation().clone().subtract(0, 1, 0).getBlock().getType();
+        if (isBubbleColumn(feet) || isSlimeBlock(below)) {
             if (config.isAirJumpADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName() + " - high ping (" + ping + "ms).");
+                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName()
+                        + " - environment (bubble/slime).");
             }
             lastOnGround.put(uuid, currGround);
             return;
         }
 
-        // recent damage/teleport ignores
         long lastDam = lastDamageTime.getOrDefault(uuid, 0L);
-        long damageWindow = config.getAirJumpADamageIgnoreMillis(); // how long after damage to ignore
+        long damageWindow = config.getAirJumpADamageIgnoreMillis();
         if (damageWindow <= 0) damageWindow = DEFAULT_DAMAGE_GRACE_MS;
         if (now - lastDam <= damageWindow) {
             if (config.isAirJumpADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName() + " - recent damage (knockback) detected.");
+                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName() + " - recent damage.");
             }
             lastOnGround.put(uuid, currGround);
             return;
@@ -251,25 +239,50 @@ public class AirJumpA implements Listener {
         long lastTp = lastTeleportTime.getOrDefault(uuid, 0L);
         if (now - lastTp <= DEFAULT_TELEPORT_GRACE_MS) {
             if (config.isAirJumpADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName() + " - recent teleport detected.");
+                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName() + " - recent teleport.");
             }
             lastOnGround.put(uuid, currGround);
             return;
         }
 
-        // final decision: require basicCondition, not recent ground contact, and sufficient horizontal movement
+        if (config.isIgnoreExternalVelocity()) {
+            VelocityMark vm = lastExternalVelocity.get(uuid);
+            if (vm != null) {
+                long dt = now - vm.time;
+                if (dt <= config.getExternalVelocityGraceMs() && vm.vec != null && vm.vec.getY() >= config.getMinUpwardVelocityY()) {
+                    if (config.isAirJumpADebugMode()) {
+                        Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName()
+                                + " - recent external velocity (dt=" + dt + "ms, vY=" + String.format("%.3f", vm.vec.getY()) + ").");
+                    }
+                    lastOnGround.put(uuid, currGround);
+                    return;
+                }
+            }
+        }
+
+        if (config.isDetectPressurePlates()) {
+            long plate = lastPressurePlateTime.getOrDefault(uuid, 0L);
+            if (plate > 0 && now - plate <= config.getPressurePlateGraceMs()) {
+                if (config.isAirJumpADebugMode()) {
+                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName()
+                            + " - recent pressure plate activation (" + (now - plate) + "ms).");
+                }
+                lastOnGround.put(uuid, currGround);
+                return;
+            }
+        }
+
         boolean startedAscendingInAir = basicCondition && !recentGroundContact && sufficientHorizontalMovement;
 
         if (config.isAirJumpADebugMode()) {
             Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) " + player.getName()
                     + " deltaY=" + String.format("%.3f", deltaY)
-                    + " threshold=" + String.format("%.3f", getAirJumpAVerticalThreshold())
+                    + " threshold=" + String.format("%.3f", config.getAirJumpAVerticalThreshold())
                     + " horizontalDelta=" + String.format("%.4f", horizontalDelta)
                     + " minHorizontal=" + String.format("%.4f", minHorizontal)
                     + " prevGround=" + prevGround + " currGround=" + currGround
                     + " sinceGround=" + (sinceGround == Long.MAX_VALUE ? "never" : sinceGround + "ms")
-                    + " groundGrace=" + getGroundGraceMillis() + "ms"
-                    + " ping=" + ping);
+                    + " groundGrace=" + getGroundGraceMillis() + "ms");
         }
 
         if (startedAscendingInAir) {
@@ -280,7 +293,6 @@ public class AirJumpA implements Listener {
             }
 
             if (config.isAirJumpACancelEvent()) {
-                // optionally cancel movement event (most plugins don't cancel move events; keep configurable)
                 event.setCancelled(true);
             }
 
@@ -300,7 +312,6 @@ public class AirJumpA implements Listener {
             }
         }
 
-        // update ground state (store last seen onGround)
         lastOnGround.put(uuid, currGround);
     }
 }

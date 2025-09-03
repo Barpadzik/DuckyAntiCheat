@@ -16,10 +16,14 @@ alert-message: "&d&lDuckyAC &8» &fPlayer &7»&f %player% &7»&6 %check% &7(&c%v
 air-jump-a:
   enabled: true # Function to enable/disable check
   cancel-event: false # Enabling this feature will take you back to the position before reporting
-  vertical-threshold: 0.42
-  ping-threshold: 300
-  damage-ignore-millis: 300
-  ground-grace-ms: 200
+  ignore-external-velocity: true
+  min-upward-velocity-y: 0.25
+  detect-pressure-plates: true
+  jumppad-plate-grace-ms: 450
+  min-horizontal: 0.02
+  external-velocity-grace-ms: 700
+  vertical-threshold: 0.3
+  damage-ignore-millis: 500
   ignore-potion-boost: false # Keep it false; it's a disabling player checking when player has Jump Boost effect
   max-alerts: 5 # Number of reports after which the command is executed
   command: "kick %player% Unnatural air jump detected (AirJumpA)" # The command that will be executed when the maximum number of reports is reached

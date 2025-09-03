@@ -655,9 +655,47 @@ public class ConfigManager {
         return plugin.getConfig().getBoolean("air-jump-a.cancel-event", false);
     }
 
+    public boolean isIgnoreExternalVelocity() {
+        return plugin.getConfig().getBoolean("air-jump-a.ignore-external-velocity", true);
+    }
+
+    public long getExternalVelocityGraceMs() {
+        String s = config.getString("air-jump-a.external-velocity-grace-ms", "700");
+        try { return Long.parseLong(s); } catch (Exception ignored) { return 700L; }
+    }
+
+    public double getMinUpwardVelocityY() {
+        String s = config.getString("air-jump-a.min-upward-velocity-y", "0.25");
+        try { return Double.parseDouble(s); } catch (Exception ignored) { return 0.25; }
+    }
+
+    public boolean isDetectPressurePlates() {
+        return Boolean.parseBoolean(config.getString("air-jump-a.detect-pressure-plates", "true"));
+    }
+
+    public long getPressurePlateGraceMs() {
+        String s = config.getString("air-jump-a.jumppad-plate-grace-ms", "450");
+        try { return Long.parseLong(s); } catch (Exception ignored) { return 450L; }
+    }
+
     /** Returns vertical delta threshold (Y) above which an in-air upward movement is considered suspicious. */
+
     public double getAirJumpAVerticalThreshold() {
-        return plugin.getConfig().getDouble("air-jump-a.vertical-threshold", 0.300);
+        String s = config.getString("air-jump-a.vertical-threshold", "0.3");
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException ex) {
+            return 0.3;
+        }
+    }
+
+    public double getAirJumpAMinHorizontalMovement() {
+        String s = config.getString("air-jump-a.min-horizontal", "0.02");
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException ex) {
+            return 0.02;
+        }
     }
 
     /** Returns whether AirJump debug mode is enabled. */
@@ -670,26 +708,15 @@ public class ConfigManager {
         return plugin.getConfig().getBoolean("air-jump-a.enabled", true);
     }
 
-    // Maksymalny ping gracza do sprawdzania (uniknięcie false positive)
-    public int getAirJumpAPingThreshold() {
-        return config.getInt("air-jump-a.ping-threshold", 200);
-    }
-
-    // Czy ignorować efekt Speed/Jump Boost (uniknięcie false positive)
+    /** Is there a Speed/Jump Boost effect (avoid false positives) */
     public boolean isAirJumpAIgnorePotionBoost() {
         return config.getBoolean("air-jump-a.ignore-potion-boost", false);
     }
 
-    /** How many milliseconds player must be off-ground before air-jump flagging */
-    public int getAirJumpAGroundGraceMillis() {
-        return plugin.getConfig().getInt("air-jump-a.ground-grace-ms", 200);
-    }
-
-    // Minimalny odstęp czasowy (w ms) od otrzymania obrażeń, by uniknąć knockback false positive
+    /** Minimum time delay (in ms) from receiving damage to avoid a false positive knockback */
     public long getAirJumpADamageIgnoreMillis() {
         return config.getLong("air-jump-a.damage-ignore-millis", 500);
     }
-
 
     /** Returns whether AutoTotemA is enabled. */
     public boolean isAutoTotemAEnabled() {
