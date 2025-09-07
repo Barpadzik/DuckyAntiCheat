@@ -673,9 +673,13 @@ public class ConfigManager {
         return Boolean.parseBoolean(config.getString("air-jump-a.detect-pressure-plates", "true"));
     }
 
-    public long getPressurePlateGraceMs() {
-        String s = config.getString("air-jump-a.jumppad-plate-grace-ms", "450");
-        try { return Long.parseLong(s); } catch (Exception ignored) { return 450L; }
+    public boolean isDetectWindCharge() {
+        return Boolean.parseBoolean(getString("air-jump-a.detect-wind-charge", "true"));
+    }
+
+    public long getWindChargeGraceMs() {
+        String s = getString("air-jump-a.wind-charge-grace-ms", "900");
+        try { return Long.parseLong(s); } catch (Exception ignored) { return 900L; }
     }
 
     /** Returns vertical delta threshold (Y) above which an in-air upward movement is considered suspicious. */

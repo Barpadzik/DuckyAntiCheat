@@ -34,13 +34,12 @@ public class AirJumpA implements Listener {
     private final ConfigManager config;
 
     private final ConcurrentHashMap<UUID, Boolean> lastOnGround = new ConcurrentHashMap<>();
-
     private final ConcurrentHashMap<UUID, Long> lastGroundTime = new ConcurrentHashMap<>();
-
     private final ConcurrentHashMap<UUID, Long> lastDamageTime = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> lastTeleportTime = new ConcurrentHashMap<>();
-
     private final ConcurrentHashMap<UUID, Long> lastPressurePlateTime = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<UUID, Long> lastWindChargeUse = new ConcurrentHashMap<>();
 
     private static final class VelocityMark {
         final long time;
@@ -81,25 +80,14 @@ public class AirJumpA implements Listener {
         }, plugin);
     }
 
-    private long getGroundGraceMillis() {
-        return DEFAULT_GROUND_GRACE_MS;
-    }
-
     private boolean isPressurePlate(Material m) {
         if (m == null) return false;
         String name = m.name();
-        return name.endsWith("_PRESSURE_PLATE")
-                || name.equals("STONE_PLATE")
-                || name.equals("WOOD_PLATE");
+        return name.endsWith("_PRESSURE_PLATE") || name.equals("STONE_PLATE") || name.equals("WOOD_PLATE");
     }
-
-    private boolean isSlimeBlock(Material m) {
-        return m != null && "SLIME_BLOCK".equals(m.name());
-    }
-
-    private boolean isBubbleColumn(Material m) {
-        return m != null && "BUBBLE_COLUMN".equals(m.name());
-    }
+    private boolean isSlimeBlock(Material m) { return m != null && "SLIME_BLOCK".equals(m.name()); }
+    private boolean isBubbleColumn(Material m) { return m != null && "BUBBLE_COLUMN".equals(m.name()); }
+    private boolean isWindCharge(Material m) { return m != null && "WIND_CHARGE".equals(m.name()); }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onVelocity(PlayerVelocityEvent ev) {
@@ -121,16 +109,26 @@ public class AirJumpA implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPhysical(PlayerInteractEvent ev) {
         if (!config.isAirJumpAEnabled()) return;
-        if (!config.isDetectPressurePlates()) return;
-        if (ev.getAction() != Action.PHYSICAL) return;
-        if (ev.getClickedBlock() == null) return;
+        if (ev.getAction() == Action.PHYSICAL && ev.getClickedBlock() != null) {
+            Material m = ev.getClickedBlock().getType();
+            if (config.isDetectPressurePlates() && isPressurePlate(m)) {
+                lastPressurePlateTime.put(ev.getPlayer().getUniqueId(), System.currentTimeMillis());
+                if (config.isAirJumpADebugMode()) {
+                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Plate activated for "
+                            + ev.getPlayer().getName() + " on " + m.name());
+                }
+            }
+            return;
+        }
 
-        Material m = ev.getClickedBlock().getType();
-        if (isPressurePlate(m)) {
-            lastPressurePlateTime.put(ev.getPlayer().getUniqueId(), System.currentTimeMillis());
-            if (config.isAirJumpADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Plate activated for "
-                        + ev.getPlayer().getName() + " on " + m.name());
+        if (!config.isDetectWindCharge()) return;
+        Action a = ev.getAction();
+        if (a == Action.RIGHT_CLICK_AIR || a == Action.RIGHT_CLICK_BLOCK) {
+            if (ev.getItem() != null && isWindCharge(ev.getItem().getType())) {
+                lastWindChargeUse.put(ev.getPlayer().getUniqueId(), System.currentTimeMillis());
+                if (config.isAirJumpADebugMode()) {
+                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Wind Charge used by " + ev.getPlayer().getName());
+                }
             }
         }
     }
@@ -144,6 +142,7 @@ public class AirJumpA implements Listener {
         lastTeleportTime.remove(id);
         lastExternalVelocity.remove(id);
         lastPressurePlateTime.remove(id);
+        lastWindChargeUse.remove(id);
     }
 
     @EventHandler
@@ -160,10 +159,7 @@ public class AirJumpA implements Listener {
         if (gm.equals("CREATIVE") || gm.equals("SPECTATOR")) return;
         if (player.isGliding() || player.isFlying() || player.isInsideVehicle()) return;
 
-        try {
-            if (player.isRiptiding()) return;
-        } catch (NoSuchMethodError ignored) {
-        }
+        try { if (player.isRiptiding()) return; } catch (NoSuchMethodError ignored) {}
 
         long now = System.currentTimeMillis();
 
@@ -191,7 +187,7 @@ public class AirJumpA implements Listener {
 
         boolean basicCondition = !prevGround && !currGround && deltaY > config.getAirJumpAVerticalThreshold();
 
-        boolean recentGroundContact = sinceGround <= getGroundGraceMillis();
+        boolean recentGroundContact = sinceGround <= DEFAULT_GROUND_GRACE_MS;
         double minHorizontal = config.getAirJumpAMinHorizontalMovement();
         boolean sufficientHorizontalMovement = horizontalDelta >= minHorizontal;
 
@@ -245,11 +241,24 @@ public class AirJumpA implements Listener {
             return;
         }
 
+        if (config.isDetectWindCharge()) {
+            long lastWC = lastWindChargeUse.getOrDefault(uuid, 0L);
+            if (lastWC > 0 && now - lastWC <= config.getWindChargeGraceMs()) {
+                if (config.isAirJumpADebugMode()) {
+                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName()
+                            + " - recent Wind Charge use (" + (now - lastWC) + "ms).");
+                }
+                lastOnGround.put(uuid, currGround);
+                return;
+            }
+        }
+
         if (config.isIgnoreExternalVelocity()) {
             VelocityMark vm = lastExternalVelocity.get(uuid);
             if (vm != null) {
                 long dt = now - vm.time;
-                if (dt <= config.getExternalVelocityGraceMs() && vm.vec != null && vm.vec.getY() >= config.getMinUpwardVelocityY()) {
+                if (dt <= config.getExternalVelocityGraceMs()
+                        && vm.vec != null && vm.vec.getY() >= config.getMinUpwardVelocityY()) {
                     if (config.isAirJumpADebugMode()) {
                         Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName()
                                 + " - recent external velocity (dt=" + dt + "ms, vY=" + String.format("%.3f", vm.vec.getY()) + ").");
@@ -257,18 +266,6 @@ public class AirJumpA implements Listener {
                     lastOnGround.put(uuid, currGround);
                     return;
                 }
-            }
-        }
-
-        if (config.isDetectPressurePlates()) {
-            long plate = lastPressurePlateTime.getOrDefault(uuid, 0L);
-            if (plate > 0 && now - plate <= config.getPressurePlateGraceMs()) {
-                if (config.isAirJumpADebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName()
-                            + " - recent pressure plate activation (" + (now - plate) + "ms).");
-                }
-                lastOnGround.put(uuid, currGround);
-                return;
             }
         }
 
@@ -282,7 +279,7 @@ public class AirJumpA implements Listener {
                     + " minHorizontal=" + String.format("%.4f", minHorizontal)
                     + " prevGround=" + prevGround + " currGround=" + currGround
                     + " sinceGround=" + (sinceGround == Long.MAX_VALUE ? "never" : sinceGround + "ms")
-                    + " groundGrace=" + getGroundGraceMillis() + "ms");
+                    + " groundGrace=" + DEFAULT_GROUND_GRACE_MS + "ms");
         }
 
         if (startedAscendingInAir) {
