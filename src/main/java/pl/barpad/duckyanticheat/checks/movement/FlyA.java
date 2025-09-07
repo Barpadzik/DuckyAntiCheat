@@ -2,11 +2,16 @@ package pl.barpad.duckyanticheat.checks.movement;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -21,22 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * FlyA - basic vanilla fly detection.
- *
- * Detects two common vanilla-fly signatures:
- *  - Hovering: player stays effectively at same Y (within hoverDelta) while airborne for N ticks.
- *  - Ascending: player continuously gains Y above expected ascendDelta for M ticks.
- *
- * Heuristics / false-positive mitigation included:
- *  - ignores players with high ping (configurable)
- *  - ignores players with recent damage/teleport (knockback/teleport)
- *  - optionally ignores players with JUMP_BOOST / LEVITATION (config)
- *  - ignores creative/spectator, gliding, flying, vehicles
- *  - bypass permission support
- *
- * Notes:
- *  - Uses config methods from ConfigManager (must be implemented there).
- *  - Conservative by default; tune thresholds in config.
+ * FlyA - basic vanilla fly detection with Wind Charge grace.
  */
 public class FlyA implements Listener {
 
@@ -49,6 +39,8 @@ public class FlyA implements Listener {
     private final ConcurrentHashMap<UUID, Integer> ascendTicks = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> lastDamageTime = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> lastTeleportTime = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<UUID, Long> lastWindChargeUse = new ConcurrentHashMap<>();
 
     public FlyA(Main plugin, ViolationAlerts violationAlerts, DiscordHook discordHook, ConfigManager config) {
         this.violationAlerts = violationAlerts;
@@ -78,14 +70,27 @@ public class FlyA implements Listener {
         }, plugin);
     }
 
-    /**
-     * Safe wrapper for Player.getPing() - returns 50 on failure.
-     */
+    /** Safe wrapper for Player.getPing() - returns 50 on failure. */
     private int getPlayerPing(Player player) {
-        try {
-            return player.getPing();
-        } catch (Exception ex) {
-            return 50;
+        try { return player.getPing(); } catch (Exception ex) { return 50; }
+    }
+
+    private boolean isWindCharge(Material m) {
+        return m != null && "WIND_CHARGE".equals(m.name());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInteract(PlayerInteractEvent ev) {
+        if (!config.isFlyAEnabled()) return;
+        if (!config.isFlyADetectWindCharge()) return;
+        Action a = ev.getAction();
+        if (a != Action.RIGHT_CLICK_AIR && a != Action.RIGHT_CLICK_BLOCK) return;
+        if (ev.getItem() == null) return;
+        if (!isWindCharge(ev.getItem().getType())) return;
+
+        lastWindChargeUse.put(ev.getPlayer().getUniqueId(), System.currentTimeMillis());
+        if (config.isFlyADebugMode()) {
+            Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) Wind Charge used by " + ev.getPlayer().getName());
         }
     }
 
@@ -94,7 +99,6 @@ public class FlyA implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        // config toggle
         if (!config.isFlyAEnabled()) return;
 
         // bypasses and permissions
@@ -120,12 +124,12 @@ public class FlyA implements Listener {
             return;
         }
 
-        // ignore if player has jump/levitation (based on config)
+        // potions
         if (config.isFlyAIgnoreJumpBoost()) {
             PotionEffect jump = player.getPotionEffect(PotionEffectType.JUMP);
             if (jump != null) {
                 if (config.isFlyADebugMode()) {
-                    Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) Ignoring " + player.getName() + " - has JUMP_BOOST potion.");
+                    Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) Ignoring " + player.getName() + " - JUMP_BOOST.");
                 }
                 hoverTicks.remove(uuid);
                 ascendTicks.remove(uuid);
@@ -135,14 +139,14 @@ public class FlyA implements Listener {
         PotionEffect lev = player.getPotionEffect(PotionEffectType.LEVITATION);
         if (lev != null) {
             if (config.isFlyADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) Ignoring " + player.getName() + " - LEVITATION present.");
+                Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) Ignoring " + player.getName() + " - LEVITATION.");
             }
             hoverTicks.remove(uuid);
             ascendTicks.remove(uuid);
             return;
         }
 
-        // ping check
+        // ping
         int ping = getPlayerPing(player);
         int pingThreshold = config.getFlyAPingThreshold();
         if (ping > pingThreshold) {
@@ -154,7 +158,7 @@ public class FlyA implements Listener {
             return;
         }
 
-        // ignore recent damage/teleport
+        // recent damage/teleport
         long now = System.currentTimeMillis();
         long lastDam = lastDamageTime.getOrDefault(uuid, 0L);
         long dmgIgnore = config.getFlyADamageIgnoreMillis();
@@ -180,35 +184,45 @@ public class FlyA implements Listener {
             return;
         }
 
-        // compute vertical/horizontal deltas
+        if (config.isFlyADetectWindCharge()) {
+            long wc = lastWindChargeUse.getOrDefault(uuid, 0L);
+            if (wc > 0 && now - wc <= config.getFlyAWindChargeGraceMs()) {
+                if (config.isFlyADebugMode()) {
+                    Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) Ignoring " + player.getName()
+                            + " - recent Wind Charge use (" + (now - wc) + "ms).");
+                }
+                hoverTicks.remove(uuid);
+                ascendTicks.remove(uuid);
+                return;
+            }
+        }
+
+        // compute deltas
         double deltaY = to.getY() - from.getY();
         double dx = to.getX() - from.getX();
         double dz = to.getZ() - from.getZ();
         double horizontal = Math.hypot(dx, dz);
 
-        // thresholds from config
-        double hoverDelta = config.getFlyAHoverDelta();    // small Y movement treated as hover
-        int hoverThreshold = config.getFlyAHoverTicks();  // ticks to consider hover suspicious
-        double ascendDelta = config.getFlyAAscendDelta(); // Y increment threshold for ascend detection
-        int ascendThreshold = config.getFlyAAscendTicks(); // consecutive ticks of ascend -> suspicious
+        // thresholds
+        double hoverDelta = config.getFlyAHoverDelta();
+        int hoverThreshold = config.getFlyAHoverTicks();
+        double ascendDelta = config.getFlyAAscendDelta();
+        int ascendThreshold = config.getFlyAAscendTicks();
 
-        // HOVER DETECTION: player nearly stable vertically but airborne
+        // HOVER
         if (Math.abs(deltaY) <= hoverDelta) {
-            int h = hoverTicks.getOrDefault(uuid, 0) + 1;
-            hoverTicks.put(uuid, h);
+            hoverTicks.put(uuid, hoverTicks.getOrDefault(uuid, 0) + 1);
         } else {
             hoverTicks.remove(uuid);
         }
 
-        // ASCEND DETECTION: continuous positive vertical motion above ascendDelta
+        // ASCEND
         if (deltaY > ascendDelta) {
-            int a = ascendTicks.getOrDefault(uuid, 0) + 1;
-            ascendTicks.put(uuid, a);
+            ascendTicks.put(uuid, ascendTicks.getOrDefault(uuid, 0) + 1);
         } else {
             ascendTicks.remove(uuid);
         }
 
-        // Debug logging
         if (config.isFlyADebugMode()) {
             Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) " + player.getName()
                     + " deltaY=" + String.format("%.4f", deltaY)
@@ -221,26 +235,17 @@ public class FlyA implements Listener {
         boolean flagged = false;
         String reason = "";
 
-        // decide flagging
-        if (hoverTicks.getOrDefault(uuid, 0) >= hoverThreshold) {
-            flagged = true;
-            reason = "hover";
-        } else if (ascendTicks.getOrDefault(uuid, 0) >= ascendThreshold) {
-            flagged = true;
-            reason = "ascend";
-        }
+        if (hoverTicks.getOrDefault(uuid, 0) >= hoverThreshold) { flagged = true; reason = "hover"; }
+        else if (ascendTicks.getOrDefault(uuid, 0) >= ascendThreshold) { flagged = true; reason = "ascend"; }
 
         if (flagged) {
             if (config.isFlyACancelEvent()) {
-                // optional: cancel movement (rarely used)
                 event.setCancelled(true);
             }
-
             int vl = violationAlerts.reportViolation(player.getName(), "FlyA");
             if (config.isFlyADebugMode()) {
                 Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) " + player.getName() + " suspected FlyA (" + reason + ") VL:" + vl);
             }
-
             if (vl >= config.getMaxFlyAAlerts()) {
                 String cmd = config.getFlyACommand();
                 violationAlerts.executePunishment(player.getName(), "FlyA", cmd);
@@ -250,10 +255,18 @@ public class FlyA implements Listener {
                     Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) Punishment executed for " + player.getName());
                 }
             }
-
-            // after flagging, reset counters to avoid repeated immediate flags
             hoverTicks.remove(uuid);
             ascendTicks.remove(uuid);
         }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent ev) {
+        UUID id = ev.getPlayer().getUniqueId();
+        hoverTicks.remove(id);
+        ascendTicks.remove(id);
+        lastDamageTime.remove(id);
+        lastTeleportTime.remove(id);
+        lastWindChargeUse.remove(id);
     }
 }

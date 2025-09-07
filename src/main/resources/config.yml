@@ -104,6 +104,8 @@ fly-a:
   ascend-ticks: 8
   damage-ignore-millis: 1500
   teleport-ignore-millis: 2000
+  detect-wind-charge: true
+  wind-charge-grace-ms: 900
   max-alerts: 5 # Number of reports after which the command is executed
   command: "kick %player% Flying (FlyA)" # The command that will be executed when the maximum number of reports is reached
   debug: false # Enable verbose debugging (may cause log spam / lag)

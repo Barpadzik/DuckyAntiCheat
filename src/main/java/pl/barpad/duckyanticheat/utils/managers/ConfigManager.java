@@ -193,6 +193,14 @@ public class ConfigManager {
         return config.getLong("fly-a.teleport-ignore-millis", 1000L);
     }
 
+    public boolean isFlyADetectWindCharge() {
+        return plugin.getConfig().getBoolean("fly-a.detect-wind-charge", true);
+    }
+
+    public long getFlyAWindChargeGraceMs() {
+        return config.getLong("fly-a.wind-charge-grace-ms", 900);
+    }
+
     /**
      * Maximum number of alerts (violations) before punishment is executed.
      * Default: 10
@@ -670,36 +678,25 @@ public class ConfigManager {
     }
 
     public boolean isDetectPressurePlates() {
-        return Boolean.parseBoolean(config.getString("air-jump-a.detect-pressure-plates", "true"));
+        return plugin.getConfig().getBoolean("air-jump-a.detect-pressure-plates", true);
     }
 
-    public boolean isDetectWindCharge() {
-        return Boolean.parseBoolean(getString("air-jump-a.detect-wind-charge", "true"));
+    public boolean isAirJumpAADetectWindCharge() {
+        return plugin.getConfig().getBoolean("air-jump-a.detect-wind-charge", true);
     }
 
-    public long getWindChargeGraceMs() {
-        String s = getString("air-jump-a.wind-charge-grace-ms", "900");
-        try { return Long.parseLong(s); } catch (Exception ignored) { return 900L; }
+    public long getAirJumpAWindChargeGraceMs() {
+        return config.getLong("air-jump-a.wind-charge-grace-ms", 900);
     }
 
     /** Returns vertical delta threshold (Y) above which an in-air upward movement is considered suspicious. */
 
     public double getAirJumpAVerticalThreshold() {
-        String s = config.getString("air-jump-a.vertical-threshold", "0.3");
-        try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException ex) {
-            return 0.3;
-        }
+        return config.getDouble("air-jump-a.vertical-threshold", 0.3);
     }
 
     public double getAirJumpAMinHorizontalMovement() {
-        String s = config.getString("air-jump-a.min-horizontal", "0.02");
-        try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException ex) {
-            return 0.02;
-        }
+        return config.getDouble("air-jump-a.min-horizontal", 0.02);
     }
 
     /** Returns whether AirJump debug mode is enabled. */

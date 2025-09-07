@@ -121,7 +121,7 @@ public class AirJumpA implements Listener {
             return;
         }
 
-        if (!config.isDetectWindCharge()) return;
+        if (!config.isAirJumpAADetectWindCharge()) return;
         Action a = ev.getAction();
         if (a == Action.RIGHT_CLICK_AIR || a == Action.RIGHT_CLICK_BLOCK) {
             if (ev.getItem() != null && isWindCharge(ev.getItem().getType())) {
@@ -241,9 +241,9 @@ public class AirJumpA implements Listener {
             return;
         }
 
-        if (config.isDetectWindCharge()) {
+        if (config.isAirJumpAADetectWindCharge()) {
             long lastWC = lastWindChargeUse.getOrDefault(uuid, 0L);
-            if (lastWC > 0 && now - lastWC <= config.getWindChargeGraceMs()) {
+            if (lastWC > 0 && now - lastWC <= config.getAirJumpAWindChargeGraceMs()) {
                 if (config.isAirJumpADebugMode()) {
                     Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName()
                             + " - recent Wind Charge use (" + (now - lastWC) + "ms).");
