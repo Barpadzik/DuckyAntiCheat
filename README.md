@@ -64,6 +64,8 @@ air-jump-a:
   external-velocity-grace-ms: 700
   vertical-threshold: 0.3
   damage-ignore-millis: 500
+  detect-wind-charge: true
+  wind-charge-grace-ms: 900
   ignore-potion-boost: false # Keep it false; it's a disabling player checking when player has Jump Boost effect
   max-alerts: 5 # Number of reports after which the command is executed
   command: "kick %player% Unnatural air jump detected (AirJumpA)" # The command that will be executed when the maximum number of reports is reached
@@ -142,6 +144,8 @@ fly-a:
   ascend-ticks: 8
   damage-ignore-millis: 1500
   teleport-ignore-millis: 2000
+  detect-wind-charge: true
+  wind-charge-grace-ms: 900
   max-alerts: 5 # Number of reports after which the command is executed
   command: "kick %player% Flying (FlyA)" # The command that will be executed when the maximum number of reports is reached
   debug: false # Enable verbose debugging (may cause log spam / lag)
