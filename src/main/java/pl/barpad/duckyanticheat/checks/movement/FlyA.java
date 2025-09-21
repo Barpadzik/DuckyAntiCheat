@@ -39,7 +39,6 @@ public class FlyA implements Listener {
     private final ConcurrentHashMap<UUID, Integer> ascendTicks = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> lastDamageTime = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> lastTeleportTime = new ConcurrentHashMap<>();
-
     private final ConcurrentHashMap<UUID, Long> lastWindChargeUse = new ConcurrentHashMap<>();
 
     public FlyA(Main plugin, ViolationAlerts violationAlerts, DiscordHook discordHook, ConfigManager config) {
@@ -79,6 +78,15 @@ public class FlyA implements Listener {
         return m != null && "WIND_CHARGE".equals(m.name());
     }
 
+    private boolean isInLiquidOrSwimming(Player player) {
+        try {
+            if (player.isSwimming()) return true;
+            if (player.getLocation().getBlock().isLiquid()) return true;
+            if (player.getEyeLocation().getBlock().isLiquid()) return true;
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent ev) {
         if (!config.isFlyAEnabled()) return;
@@ -109,6 +117,15 @@ public class FlyA implements Listener {
         String gm = player.getGameMode().name();
         if (gm.equals("CREATIVE") || gm.equals("SPECTATOR")) return;
         if (player.isGliding() || player.isFlying() || player.isInsideVehicle()) return;
+
+        if (isInLiquidOrSwimming(player)) {
+            if (config.isFlyADebugMode()) {
+                Bukkit.getLogger().info("[DuckyAC] (FlyA Debug) Ignoring " + player.getName() + " - swimming/in liquid.");
+            }
+            hoverTicks.remove(uuid);
+            ascendTicks.remove(uuid);
+            return;
+        }
 
         // movement locations
         Location from = event.getFrom();

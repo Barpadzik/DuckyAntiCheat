@@ -3,6 +3,9 @@ package pl.barpad.duckyanticheat.checks.movement;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -38,7 +41,6 @@ public class AirJumpA implements Listener {
     private final ConcurrentHashMap<UUID, Long> lastDamageTime = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> lastTeleportTime = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> lastPressurePlateTime = new ConcurrentHashMap<>();
-
     private final ConcurrentHashMap<UUID, Long> lastWindChargeUse = new ConcurrentHashMap<>();
 
     private static final class VelocityMark {
@@ -50,6 +52,15 @@ public class AirJumpA implements Listener {
         }
     }
     private final ConcurrentHashMap<UUID, VelocityMark> lastExternalVelocity = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<UUID, Boolean> lastElytraGlide = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Long> lastElytraStart = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Long> lastElytraEnd   = new ConcurrentHashMap<>();
+    private static final long ELYTRA_GRACE_MS = 300L;
+
+    private final ConcurrentHashMap<UUID, Boolean> lastInWater = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Long> lastWaterExit  = new ConcurrentHashMap<>();
+    private static final long WATER_EXIT_GRACE_MS = 300L;
 
     private static final long DEFAULT_DAMAGE_GRACE_MS = 300L;
     private static final long DEFAULT_TELEPORT_GRACE_MS = 500L;
@@ -88,6 +99,32 @@ public class AirJumpA implements Listener {
     private boolean isSlimeBlock(Material m) { return m != null && "SLIME_BLOCK".equals(m.name()); }
     private boolean isBubbleColumn(Material m) { return m != null && "BUBBLE_COLUMN".equals(m.name()); }
     private boolean isWindCharge(Material m) { return m != null && "WIND_CHARGE".equals(m.name()); }
+
+    private boolean isElytraFlying(Player p) {
+        try {
+            if (p.isGliding()) return true;
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private boolean isWaterBlock(Block b) {
+        if (b == null) return false;
+        Material t = b.getType();
+        if (t == Material.WATER) return true;
+        try {
+            BlockData data = b.getBlockData();
+            if (data instanceof Waterlogged wl && wl.isWaterlogged()) return true;
+        } catch (Throwable ignored) {}
+
+        if (t == Material.BUBBLE_COLUMN) return true;
+        return false;
+    }
+
+    private boolean isInWaterEnvironment(Player p) {
+        try {
+            return isWaterBlock(p.getLocation().getBlock()) || isWaterBlock(p.getEyeLocation().getBlock());
+        } catch (Throwable ignored) { return false; }
+    }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onVelocity(PlayerVelocityEvent ev) {
@@ -143,6 +180,11 @@ public class AirJumpA implements Listener {
         lastExternalVelocity.remove(id);
         lastPressurePlateTime.remove(id);
         lastWindChargeUse.remove(id);
+        lastElytraGlide.remove(id);
+        lastElytraStart.remove(id);
+        lastElytraEnd.remove(id);
+        lastInWater.remove(id);
+        lastWaterExit.remove(id);
     }
 
     @EventHandler
@@ -157,11 +199,79 @@ public class AirJumpA implements Listener {
 
         String gm = player.getGameMode().name();
         if (gm.equals("CREATIVE") || gm.equals("SPECTATOR")) return;
-        if (player.isGliding() || player.isFlying() || player.isInsideVehicle()) return;
-
-        try { if (player.isRiptiding()) return; } catch (NoSuchMethodError ignored) {}
 
         long now = System.currentTimeMillis();
+
+        boolean currGlide = false;
+        try { currGlide = player.isGliding(); } catch (Throwable ignored) {}
+
+        Boolean prevGlide = lastElytraGlide.get(uuid);
+        if (prevGlide == null) {
+            lastElytraGlide.put(uuid, currGlide);
+        } else {
+            if (!prevGlide && currGlide) {
+                lastElytraStart.put(uuid, now);
+                if (config.isAirJumpADebugMode()) {
+                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Elytra START for " + player.getName());
+                }
+            } else if (prevGlide && !currGlide) {
+                lastElytraEnd.put(uuid, now);
+                if (config.isAirJumpADebugMode()) {
+                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Elytra END for " + player.getName());
+                }
+            }
+            lastElytraGlide.put(uuid, currGlide);
+        }
+
+        boolean currentlyElytra = isElytraFlying(player);
+        long sinceStart = now - lastElytraStart.getOrDefault(uuid, 0L);
+        long sinceEnd   = now - lastElytraEnd.getOrDefault(uuid,   Long.MAX_VALUE);
+
+        boolean withinStartGrace = sinceStart >= 0 && sinceStart <= ELYTRA_GRACE_MS;
+        boolean withinEndGrace   = sinceEnd   >= 0 && sinceEnd   <= ELYTRA_GRACE_MS;
+
+        if (currentlyElytra || withinStartGrace || withinEndGrace) {
+            if (config.isAirJumpADebugMode()) {
+                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName()
+                        + " - elytra flight grace (current=" + currentlyElytra
+                        + ", afterStart=" + withinStartGrace
+                        + ", afterEnd=" + withinEndGrace + ").");
+            }
+            lastOnGround.remove(uuid);
+            lastGroundTime.remove(uuid);
+            return;
+        }
+
+        boolean inWaterNow = isInWaterEnvironment(player);
+        Boolean inWaterPrev = lastInWater.get(uuid);
+        if (inWaterPrev == null) {
+            lastInWater.put(uuid, inWaterNow);
+        } else {
+            if (inWaterPrev && !inWaterNow) {
+                lastWaterExit.put(uuid, now);
+                if (config.isAirJumpADebugMode()) {
+                    Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Water EXIT for " + player.getName());
+                }
+            }
+            lastInWater.put(uuid, inWaterNow);
+        }
+
+        long sinceWaterExit = now - lastWaterExit.getOrDefault(uuid, Long.MAX_VALUE);
+        boolean withinWaterExitGrace = sinceWaterExit >= 0 && sinceWaterExit <= WATER_EXIT_GRACE_MS;
+
+        if (inWaterNow || withinWaterExitGrace) {
+            if (config.isAirJumpADebugMode()) {
+                Bukkit.getLogger().info("[DuckyAC] (AirJumpA Debug) Ignoring " + player.getName()
+                        + " - water grace (inWater=" + inWaterNow
+                        + ", afterExit=" + withinWaterExitGrace + ").");
+            }
+            lastOnGround.remove(uuid);
+            lastGroundTime.remove(uuid);
+            return;
+        }
+
+        if (player.isFlying() || player.isInsideVehicle()) return;
+        try { if (player.isRiptiding()) return; } catch (NoSuchMethodError ignored) {}
 
         boolean prevGround = lastOnGround.getOrDefault(uuid, player.isOnGround());
         boolean currGround = player.isOnGround();

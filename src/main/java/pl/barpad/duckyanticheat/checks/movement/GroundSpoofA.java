@@ -21,11 +21,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * GroundSpoofA check.
- * <p>
+ *
  * Detects cases where the player appears to be considered "on ground" while there is no solid block
  * sufficiently close beneath the player's feet. This is a heuristic that attempts to catch common
  * "ground spoof" cheats where the client lies about ground state.
- * <p>
+ *
  * Conservative measures to reduce false positives:
  *  - ignores players with high ping (configurable),
  *  - ignores players who recently took damage (knockback),
@@ -33,9 +33,11 @@ import java.util.concurrent.ConcurrentHashMap;
  *  - ignores creative / spectator / flying / gliding / in-vehicle states,
  *  - ignores small vertical velocity noise,
  *  - uses a configurable scan depth and tolerances.
- * <p>
- * Note: this implementation purposely avoids ProtocolLib / PacketEvents and operates purely using
- * Bukkit events & world queries (blocks).
+ *
+ * Edge tolerance:
+ *  When standing on the edge of a block, the feet location may be over air even though part of the
+ *  hitbox is supported. We therefore probe several offsets around the feet (±~0.31 in X/Z) and take
+ *  the minimum distance-to-ground found among those probes.
  */
 public class GroundSpoofA implements Listener {
 
@@ -46,6 +48,11 @@ public class GroundSpoofA implements Listener {
     // track last damage / teleport times to ignore knockback / teleport cases
     private final ConcurrentHashMap<UUID, Long> lastDamageTime = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> lastTeleportTime = new ConcurrentHashMap<>();
+
+    // Edge tolerance params (chosen to roughly match player half-width ~0.3)
+    private static final double EDGE_PROBE_RADIUS = 0.31;   // how far from center to probe (X/Z)
+    private static final double EDGE_PROBE_DIAGONAL = 0.31; // same for diagonal
+    private static final double PROBE_Y_STEP = 0.05;        // vertical scan increment
 
     public GroundSpoofA(Main plugin, ViolationAlerts violationAlerts, DiscordHook discordHook, ConfigManager config) {
         this.violationAlerts = violationAlerts;
@@ -72,43 +79,58 @@ public class GroundSpoofA implements Listener {
         }, plugin);
     }
 
-    /**
-     * Safe wrapper for Player.getPing() - returns 50 on failure.
-     */
+    /** Safe wrapper for Player.getPing() - returns 50 on failure. */
     private int getPlayerPing(Player player) {
-        try {
-            return player.getPing();
-        } catch (Throwable t) {
-            return 50;
-        }
+        try { return player.getPing(); } catch (Throwable t) { return 50; }
     }
 
     /**
-     * Scan downward from player's feet in small increments up to checkDepth to find the first non-air block.
-     * Returns the vertical distance (in blocks) between player's feet (player.getLocation().getY())
-     * and the top surface of the found block (block.getY() + 1). If no block is found within depth,
-     * returns Double.POSITIVE_INFINITY.
-     * <p>
-     * This uses small increments (0.05) to be reasonably precise without heavy cost.
+     * Scan downward from a given location (treated as "feet") to the first non-air block top surface.
+     * Returns vertical distance (feetY - topY). If none found within depth, returns +INF.
      */
-    private double scanDistanceToGround(Player player, double checkDepth) {
-        Location feet = player.getLocation(); // feet location
-        double feetY = feet.getY();
-        // step is small to handle partial blocks (slabs, etc.)
-        final double step = 0.05;
+    private double scanDistanceToGroundAt(Location feetLoc, double checkDepth) {
+        final double feetY = feetLoc.getY();
         double scanned = 0.0;
         while (scanned <= checkDepth) {
-            Location probe = feet.clone().subtract(0.0, scanned, 0.0);
+            Location probe = feetLoc.clone().subtract(0.0, scanned, 0.0);
             Block block = probe.getBlock();
             if (!block.getType().isAir()) {
-                // top of block is block.getY() + 1.0
                 double topY = block.getY() + 1.0;
                 return feetY - topY;
             }
-            scanned += step;
+            scanned += PROBE_Y_STEP;
         }
-        // no solid block found within checkDepth
         return Double.POSITIVE_INFINITY;
+    }
+
+    /** Backwards-compat wrapper using player's current feet position. */
+    private double scanDistanceToGround(Player player, double checkDepth) {
+        return scanDistanceToGroundAt(player.getLocation(), checkDepth);
+    }
+
+    /**
+     * Edge-tolerant ground distance: probe center + 8 surrounding offsets and take the MIN distance.
+     * This reduces false positives when only part of the hitbox is supported.
+     */
+    private double scanMinDistanceAround(Player player, double checkDepth) {
+        Location feet = player.getLocation();
+
+        // Offsets to probe: center, 4-axis, 4-diagonals
+        double r = EDGE_PROBE_RADIUS;
+        double d = EDGE_PROBE_DIAGONAL;
+        double[][] offsets = new double[][]{
+                { 0.0,  0.0},
+                { r,    0.0}, {-r,   0.0}, { 0.0,  r}, { 0.0, -r},
+                { d,    d  }, { d,   -d  }, { -d,  d }, { -d,  -d}
+        };
+
+        double min = Double.POSITIVE_INFINITY;
+        for (double[] off : offsets) {
+            Location at = feet.clone().add(off[0], 0.0, off[1]);
+            double dist = scanDistanceToGroundAt(at, checkDepth);
+            if (dist < min) min = dist;
+        }
+        return min;
     }
 
     @EventHandler
@@ -130,7 +152,8 @@ public class GroundSpoofA implements Listener {
         int pingThreshold = config.getGroundSpoofAPingThreshold();
         if (ping > pingThreshold) {
             if (config.isGroundSpoofADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (GroundSpoofA Debug) Ignoring " + player.getName() + " - high ping (" + ping + "ms).");
+                Bukkit.getLogger().info("[DuckyAC] (GroundSpoofA Debug) Ignoring " + player.getName()
+                        + " - high ping (" + ping + "ms).");
             }
             return;
         }
@@ -143,7 +166,8 @@ public class GroundSpoofA implements Listener {
         if (dmgIgnore <= 0) dmgIgnore = 300L;
         if (now - lastDam <= dmgIgnore) {
             if (config.isGroundSpoofADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (GroundSpoofA Debug) Ignoring " + player.getName() + " - recent damage.");
+                Bukkit.getLogger().info("[DuckyAC] (GroundSpoofA Debug) Ignoring " + player.getName()
+                        + " - recent damage.");
             }
             return;
         }
@@ -153,23 +177,23 @@ public class GroundSpoofA implements Listener {
         if (tpIgnore <= 0) tpIgnore = 500L;
         if (now - lastTp <= tpIgnore) {
             if (config.isGroundSpoofADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (GroundSpoofA Debug) Ignoring " + player.getName() + " - recent teleport.");
+                Bukkit.getLogger().info("[DuckyAC] (GroundSpoofA Debug) Ignoring " + player.getName()
+                        + " - recent teleport.");
             }
             return;
         }
 
-        // only proceed when the server believes the player is on ground; ground-spoof commonly lies about being on/off-ground
+        // only proceed when the server believes the player is on ground
         if (!player.isOnGround()) return;
 
-        // measure vertical distance to the nearest solid block under the player
+        // edge-tolerant distance to the nearest solid block under/around the player
         double checkDepth = config.getGroundSpoofACheckDepth();
-        double distanceToGround = scanDistanceToGround(player, checkDepth);
+        double distanceToGround = scanMinDistanceAround(player, checkDepth);
 
         double minGroundDistance = config.getGroundSpoofAMinGroundDistance();
         double verticalTolerance = config.getGroundSpoofAVerticalTolerance();
 
         // small vertical velocity check to avoid flagging legitimate falling/step/jump-in-place
-        player.getVelocity();
         double vy = player.getVelocity().getY();
         boolean smallVerticalMotion = Math.abs(vy) <= verticalTolerance;
 
@@ -178,15 +202,16 @@ public class GroundSpoofA implements Listener {
             // no block within configured depth -> very suspicious
             suspicious = true;
         } else {
-            // if distance to top of block is larger than allowed minimum + tolerance AND vertical motion small -> suspicious
+            // Allow min distance + tolerance; with edge probes we already give lateral slack.
             suspicious = (distanceToGround > (minGroundDistance + verticalTolerance)) && smallVerticalMotion;
         }
 
         if (config.isGroundSpoofADebugMode()) {
             String distStr = Double.isInfinite(distanceToGround) ? "none" : String.format("%.3f", distanceToGround);
             Bukkit.getLogger().info("[DuckyAC] (GroundSpoofA Debug) " + player.getName()
-                    + " isOnGround=true | distToGround=" + distStr
-                    + " (min=" + String.format("%.3f", minGroundDistance) + " tol=" + String.format("%.3f", verticalTolerance) + ")"
+                    + " isOnGround=true | distToGround(min-probed)=" + distStr
+                    + " (min=" + String.format("%.3f", minGroundDistance)
+                    + " tol=" + String.format("%.3f", verticalTolerance) + ")"
                     + " vy=" + String.format("%.3f", vy)
                     + " ping=" + ping);
         }
@@ -199,7 +224,8 @@ public class GroundSpoofA implements Listener {
             int vl = violationAlerts.reportViolation(player.getName(), "GroundSpoofA");
 
             if (config.isGroundSpoofADebugMode()) {
-                Bukkit.getLogger().info("[DuckyAC] (GroundSpoofA Debug) " + player.getName() + " flagged GroundSpoofA (VL:" + vl + ").");
+                Bukkit.getLogger().info("[DuckyAC] (GroundSpoofA Debug) " + player.getName()
+                        + " flagged GroundSpoofA (VL:" + vl + ").");
             }
 
             if (vl >= config.getMaxGroundSpoofAAlerts()) {

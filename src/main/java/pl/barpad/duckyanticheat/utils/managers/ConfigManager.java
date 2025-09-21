@@ -558,7 +558,7 @@ public class ConfigManager {
 
     /** Returns base range for ReachA (used when no per-player attribute is present). */
     public double getReachABaseRange() {
-        return plugin.getConfig().getDouble("reach-a.base-range", 4.5);
+        return plugin.getConfig().getDouble("reach-a.base-range", 5.0);
     }
 
     /** Returns ping threshold for ReachA. */

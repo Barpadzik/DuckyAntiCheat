@@ -267,7 +267,7 @@ no-slowdown-h:
 reach-a:
   enabled: true # Function to enable/disable check
   cancel-event: false # Enabling this feature will take you back to the position before reporting
-  base-range: 3.0 # Default base reach (used when player attribute is not available)
+  base-range: 5.0 # Default base reach (used when player attribute is not available)
   tolerance: 0.2 # Extra tolerance added to reach checks
   ping-threshold: 300 # If player's ping exceeds this, the check will grant an extra 0.5 block tolerance for player
   max-alerts: 5 # Number of reports after which the command is executed
