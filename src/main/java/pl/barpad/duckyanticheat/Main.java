@@ -6,6 +6,7 @@ import pl.barpad.duckyanticheat.checks.combat.*;
 import pl.barpad.duckyanticheat.checks.elytra.ElytraAimA;
 import pl.barpad.duckyanticheat.checks.movement.*;
 import pl.barpad.duckyanticheat.checks.place.AirPlaceA;
+import pl.barpad.duckyanticheat.checks.place.AutoTrapA;
 import pl.barpad.duckyanticheat.checks.place.FastPlaceA;
 import pl.barpad.duckyanticheat.checks.place.InvalidPlaceA;
 import pl.barpad.duckyanticheat.checks.elytra.ElytraCriticalsA;
@@ -70,6 +71,7 @@ public final class Main extends JavaPlugin {
         registerCheck(new AirJumpA(this, violationAlerts, discordHook, configManager));
         registerCheck(new AirPlaceA(this, violationAlerts, discordHook, configManager));
         registerCheck(new AutoTotemA(this, violationAlerts, discordHook, configManager));
+        registerCheck(new AutoTrapA(this, violationAlerts, discordHook, configManager));
         registerCheck(new ElytraAimA(this, violationAlerts, discordHook, configManager));
         registerCheck(new ElytraCriticalsA(this, violationAlerts, discordHook, configManager));
         registerCheck(new GroundSpoofA(this, violationAlerts, discordHook, configManager));
