@@ -35,7 +35,8 @@ public class ThruBlocksB implements Listener {
 
     private boolean isIgnoredBlock(Material mat) {
         return mat == Material.OAK_SIGN ||
-                mat.name().contains("SIGN");
+                mat.name().contains("SIGN") ||
+                mat.name().contains("BANNER");
     }
 
 
