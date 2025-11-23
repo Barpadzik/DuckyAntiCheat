@@ -13,6 +13,7 @@ It detects unnatural player behavior in block placing, movement, and other inter
   - `AirJumpA`: Detects Jumping in air
   - `AirPlaceA`: Detects when player are building mid air  
   - `AutoTotemA`: Detects suspicious totem planting (beta check)
+  - `AutoTrapA`: Detects suspicious trap placing
   - `ElytraAimA`: Player was detected to be hitting too fast while flying an elytra
   - `ElytraCriticalsA`: Detects when a player deals too much critical damage while flying an elytra in too short a time
   - `GroundSpoofA`: Detects when player is sending false informations about his position
@@ -89,6 +90,18 @@ auto-totem-a:
   max-ping: -1
   max-alerts: 5 # Number of reports after which the command is executed
   command: "kick %player% Too fast totem swap (AutoTotemA)" # The command that will be executed when the maximum number of reports is reached
+  debug: false # Enable verbose debugging (may cause log spam / lag)
+
+# AUTO TRAP A
+# Detects quick enclosing of a player with wood blocks and cobwebs (auto trap macros).
+auto-trap-a:
+  enabled: true # Function to enable/disable check
+  cancel-event: true # Enabling this feature will cancel the block placement
+  max-time: 2000 # Maximum time in milliseconds to detect the trap pattern
+  min-blocks: 6 # Minimum wood blocks required to consider it a trap
+  max-distance: 5.0 # Maximum distance from the placed block to the nearest player
+  max-alerts: 3 # Number of reports after which the command is executed
+  command: "kick %player% Suspicious auto-trap detected (AutoTrapA)" # The command that will be executed when the maximum number of reports is reached
   debug: false # Enable verbose debugging (may cause log spam / lag)
 
 # ELYTRA AIM A
@@ -307,7 +320,7 @@ no-slowdown-h:
 reach-a:
   enabled: true # Function to enable/disable check
   cancel-event: false # Enabling this feature will take you back to the position before reporting
-  base-range: 3.0 # Default base reach (used when player attribute is not available)
+  base-range: 5.0 # Default base reach (used when player attribute is not available)
   tolerance: 0.2 # Extra tolerance added to reach checks
   ping-threshold: 300 # If player's ping exceeds this, the check will grant an extra 0.5 block tolerance for player
   max-alerts: 5 # Number of reports after which the command is executed
@@ -320,7 +333,7 @@ reach-a:
 reach-b:
   enabled: true # Function to enable/disable check
   cancel-event: false # Enabling this feature will take you back to the position before reporting
-  base-range: 3.0 # Default base reach (used when player attribute is not available)
+  base-range: 4.0 # Default base reach (used when player attribute is not available)
   tolerance: 0.2 # Extra tolerance added to reach checks
   ping-threshold: 300 # If player's ping exceeds this, the check will grant an extra 0.5 block tolerance for player
   max-alerts: 5 # Number of reports after which the command is executed
