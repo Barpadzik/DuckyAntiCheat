@@ -68,7 +68,6 @@ public class ThruBlocksA implements Listener {
 
     private boolean isPassableMaterial(Material material) {
         return material == Material.GRASS ||
-                material == Material.TALL_GRASS ||
                 material == Material.SEAGRASS ||
                 material == Material.TALL_SEAGRASS ||
                 material == Material.KELP ||

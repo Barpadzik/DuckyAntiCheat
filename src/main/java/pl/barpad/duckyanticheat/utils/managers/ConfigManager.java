@@ -729,6 +729,46 @@ public class ConfigManager {
         return config.getBoolean("auto-totem-a.debug", false);
     }
 
+    /** Returns whether AutoTrapA is enabled. */
+    public boolean isAutoTrapAEnabled() {
+        return config.getBoolean("auto-trap-a.enabled", true);
+    }
+
+    /** Returns whether AutoTrapA cancel-event is enabled. */
+    public boolean isAutoTrapACancelEvent() {
+        return config.getBoolean("auto-trap-a.cancel-event", true);
+    }
+
+    /** Returns the max time (ms) to detect trap pattern for AutoTrapA. */
+    public long getAutoTrapAMaxTime() {
+        return config.getLong("auto-trap-a.max-time", 2000);
+    }
+
+    /** Returns minimum wood blocks required for AutoTrapA. */
+    public int getAutoTrapAMinBlocks() {
+        return config.getInt("auto-trap-a.min-blocks", 6);
+    }
+
+    /** Returns max distance from placed block to nearest player for AutoTrapA. */
+    public double getAutoTrapAMaxDistance() {
+        return config.getDouble("auto-trap-a.max-distance", 5.0);
+    }
+
+    /** Returns configured maximum alerts for AutoTrapA. */
+    public int getMaxAutoTrapAAlerts() {
+        return config.getInt("auto-trap-a.max-alerts", 3);
+    }
+
+    /** Returns the command for AutoTrapA. */
+    public String getAutoTrapACommand() {
+        return config.getString("auto-trap-a.command", "kick %player% Suspicious auto-trap detected (AutoTrapA)");
+    }
+
+    /** Returns whether AutoTrapA debug mode is enabled. */
+    public boolean isAutoTrapADebugMode() {
+        return config.getBoolean("auto-trap-a.debug", false);
+    }
+
     /** Returns if Discord integration is enabled. */
     public boolean isDiscordEnabled() {
         return config.getBoolean("discord.enabled", false);

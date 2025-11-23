@@ -33,6 +33,12 @@ public class ThruBlocksB implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
+    private boolean isIgnoredBlock(Material mat) {
+        return mat == Material.OAK_SIGN ||
+                mat.name().contains("SIGN");
+    }
+
+
     /**
      * Listens for player-vs.-player damage events.
      * Detects if the attacker hits through blocks illegally.
@@ -81,13 +87,19 @@ public class ThruBlocksB implements Listener {
 
             boolean pathBlocked = false;
 
-            // Iterate through blocks on path and check if any are solid or cobweb
+            // Iterate through blocks on a path and check if any are solid or cobweb
             while (iterator.hasNext()) {
                 Block block = iterator.next();
+                // Ignore sign blocks completely
+                if (isIgnoredBlock(block.getType())) {
+                    continue;
+                }
+
                 if (block.getType().isSolid() || block.getType() == Material.COBWEB) {
                     pathBlocked = true;
                     break;
                 }
+
             }
 
             if (!pathBlocked) {
