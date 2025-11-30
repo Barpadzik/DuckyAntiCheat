@@ -36,7 +36,8 @@ public class ThruBlocksB implements Listener {
     private boolean isIgnoredBlock(Material mat) {
         return mat == Material.OAK_SIGN ||
                 mat.name().contains("SIGN") ||
-                mat.name().contains("BANNER");
+                mat.name().contains("BANNER") ||
+                mat == Material.COBWEB;
     }
 
 
@@ -88,15 +89,15 @@ public class ThruBlocksB implements Listener {
 
             boolean pathBlocked = false;
 
-            // Iterate through blocks on a path and check if any are solid or cobweb
+            // Iterate through blocks on a path and check if any are solid
             while (iterator.hasNext()) {
                 Block block = iterator.next();
-                // Ignore sign blocks completely
+                // Ignore certain blocks that should not block line of sight
                 if (isIgnoredBlock(block.getType())) {
                     continue;
                 }
 
-                if (block.getType().isSolid() || block.getType() == Material.COBWEB) {
+                if (block.getType().isSolid()) {
                     pathBlocked = true;
                     break;
                 }
